@@ -1,0 +1,321 @@
+<div id="controls">
+	<button onclick="window.onresize()">Resize</button>
+	<button class="on" onclick="onToggleWords(this)">Words</button>
+	<button class="off" onclick="onToggleTranslations(this)">Translations</button>
+	<button class="off" onclick="onToggleDebug(this)">Debug</button>
+</div>
+
+{{Content}}
+
+<div id="popup">
+	<div class="reading"></div>
+	<div class="meaning"></div>
+</div>
+
+<div id="console"></div>
+<div id="cursor-position"></div>
+
+<script>
+	var annotated = document.getElementsByTagName("annotated")[0];
+	var image = document.getElementsByTagName("img")[0];
+	var words = document.getElementsByTagName("words")[0];
+	var translations = document.getElementsByTagName("translations")[0];
+	var popup = document.getElementById("popup");
+	var cursorPosition = document.getElementById("cursor-position");
+	var console = document.getElementById("console");
+	var imageScaleRatio = 1;
+	var initializations = 0;
+
+	/*
+	Function
+	*/
+
+	var consoleLog = function(message)
+	{
+		console.innerHTML += message += "<br>";
+	};
+
+	var calculateImageScaleRatio = function()
+	{
+		var imageScaleRatioX = image.width / image.naturalWidth;
+		var imageScaleRatioY = image.height / image.naturalHeight;
+
+		imageScaleRatio = imageScaleRatioX;
+
+		if (imageScaleRatioY < imageScaleRatio) {
+			imageScaleRatio = imageScaleRatioY;
+		}
+	};
+
+	var placeElement = function(element)
+	{
+		var left = element.getAttribute("left");
+		var top = element.getAttribute("top");
+		var width = element.getAttribute("width");
+		var height = element.getAttribute("height");
+
+		if (!left || !top || !width || !height) {
+			return;
+		}
+
+		// The left, top, width and height attributes are relative to the original
+		// image's size, so we need to move them according to the resized image's size.
+		left = left * imageScaleRatio;
+		top = top * imageScaleRatio;
+		width = width * imageScaleRatio;
+		height = height * imageScaleRatio;
+
+		// Take into account the fact that there's some space between
+		// the annotated (green outline) and the image (red outline)
+		left += (image.offsetLeft);
+		top += (image.offsetTop);
+
+		element.style.left = left + "px";
+		element.style.top = top + "px";
+		element.style.width = width + "px";
+		element.style.height = height + "px";
+		element.style.maxWidth = width + "px";
+		element.style.maxWidth = height + "px";
+	};
+
+	var updateViewElements = function()
+	{
+		// Place words
+		for (var i = 0; i < words.children.length; i++) {
+			placeElement(words.children[i]);
+
+			// Unbind previous events
+			words.children[i].removeEventListener("mouseover", onWordMouseOver);
+			words.children[i].removeEventListener("mouseleave", onWordMouseLeave);
+
+			// Register mouse over events on words
+			words.children[i].addEventListener("mouseover", onWordMouseOver);
+			words.children[i].addEventListener("mouseleave", onWordMouseLeave);
+		}
+
+		// Place translations
+		for (var i = 0; i < translations.children.length; i++) {
+			placeElement(translations.children[i]);
+
+			// Resize font
+			translations.children[i].style.fontSize = (imageScaleRatio * 2) + "rem";
+		}
+	};
+
+	var changeNotesOpacity = function(value)
+	{
+		for (var i = 0; i < translations.children.length; i++) {
+			translations.children[i].style.opacity = value;
+		}
+	};
+
+	var changeNotesBackgroundOpacity = function(value)
+	{
+		for (var i = 0; i < translations.children.length; i++) {
+			translations.children[i].style.background = "rgba(255, 255, 238, " + value + ")";
+		}
+	};
+
+	var displayInnerNoteContentAccordingToSide = function()
+	{
+		// Look at each translations
+		for (var i = 0; i < translations.children.length; i++) {
+			var childNote = translations.children[i];
+
+			if (childNote.children.length < 1) {
+				continue;
+			}
+
+			var front = null;
+			var back = null;
+
+			for (var j = 0; j < childNote.children.length; j++) {
+				if (childNote.children[j].tagName === "FRONT") {
+					front = childNote.children[j];
+				}
+
+				if (childNote.children[j].tagName === "BACK") {
+					back = childNote.children[j];
+				}
+			}
+
+			// Do nothing if we don't have both the front and back side
+			if (!front || !back) {
+				continue;
+			}
+
+			if (front) {
+				front.style.display = (innerNoteSide === "FRONT" ? "block" : "none");
+			}
+
+			if (back) {
+				back.style.display = (innerNoteSide === "BACK" ? "block" : "none");
+			}
+		}
+	};
+
+	var toggleButtonState = function(button)
+	{
+		button.classList.toggle("off");
+		button.classList.toggle("on");
+	};
+
+	// On AnkiDroid, it might take a few seconds for the view to be
+	// properly loaded. Until then we will only calculate an image ratio
+	// of 1, which would result in badly placed elements. For this reason
+	// we'll loop a few times until we get a correct scale ratio.
+	var initialize = function(seconds)
+	{
+		setTimeout(function() {
+			consoleLog("Initializing... (" + initializations + ")");
+
+			calculateImageScaleRatio();
+
+			// Initialized
+			if (imageScaleRatio !== 1) {
+				updateViewElements();
+				consoleLog("Initialized.");
+
+				return;
+			}
+
+			// Failed but we've already tried too many times
+			if (initializations > 9) {
+				consoleLog("Initialization aborted.");
+
+				return;
+			}
+
+			initializations++;
+
+			// Try again
+			initialize(1);
+		}, seconds);
+	};
+
+	/*
+	Event
+	*/
+
+	var onToggleWords = function(button)
+	{
+		toggleButtonState(button);
+
+		words.classList.toggle("hidden");
+	};
+
+	var onToggleTranslations = function(button)
+	{
+		if (button) {
+			toggleButtonState(button);
+		}
+
+		translations.classList.toggle("visible");
+	};
+
+	var onToggleDebug = function(button)
+	{
+		toggleButtonState(button);
+
+		annotated.classList.toggle("debug");
+		image.classList.toggle("debug");
+		console.classList.toggle("visible");
+		cursorPosition.classList.toggle("visible");
+	};
+
+	var onWordMouseOver = function(event)
+	{
+		var reading = event.target.getAttribute("reading");
+		var meaning = event.target.getAttribute("meaning");
+
+		var left = annotated.offsetLeft + 10;
+		var top = annotated.offsetTop + 10;
+
+		var parent = event.target;
+		var translation = event.target.parentNode.parentNode;
+
+		if (translation && translation.tagName === "translation") {
+			parent = translation;
+		}
+
+		// Position relative to the parent
+		left += parent.offsetLeft + parent.offsetWidth;
+		top += parent.offsetTop + parent.offsetHeight;
+
+		var readingElement = popup.getElementsByClassName("reading");
+		var meaningElement = popup.getElementsByClassName("meaning");
+
+		readingElement[0].innerHTML = reading;
+		meaningElement[0].innerHTML = meaning;
+
+		popup.style.left = left + "px";
+		popup.style.top = top + "px";
+		popup.style.display = "block";
+	};
+
+	var onWordMouseLeave = function(event)
+	{
+		popup.style.display = "none";
+	};
+
+	document.onmousemove = function handleMouseMove(event) {
+		var eventDoc, doc, body;
+
+		event = event || window.event;
+
+		if (event.pageX == null && event.clientX != null) {
+			eventDoc = (event.target && event.target.ownerDocument) || document;
+			doc = eventDoc.documentElement;
+			body = eventDoc.body;
+			event.pageX = event.clientX + (doc && doc.scrollLeft || body && body.scrollLeft || 0) - (doc && doc.clientLeft || body && body.clientLeft || 0);
+			event.pageY = event.clientY + (doc && doc.scrollTop || body && body.scrollTop || 0) - (doc && doc.clientTop || body && body.clientTop || 0 );
+		}
+
+		// We now have the cursor's position relative to the page with
+		// event.pageX and event.pageY, but we want the position according
+		// to the image instead.
+		var left = event.pageX;
+		var top = event.pageY;
+
+		// Left and top are now relative to the annotated (green outline)
+		left -= annotated.offsetLeft;
+		top -= annotated.offsetTop;
+
+		// Left and top are now relative to the img (red outline)
+		left -= image.offsetLeft;
+		top -= image.offsetTop;
+
+		if (left < 0) { left = 0; }
+		if (top < 0) { top = 0; }
+
+		var leftPercentage = (left / image.width) * 100;
+		var topPercentage = (top / image.height) * 100;
+
+		leftPercentage = Math.round(leftPercentage);
+		topPercentage = Math.round(topPercentage);
+
+		var scaledLeft = Math.round(left / imageScaleRatio);
+		var scaledTop = Math.round(top / imageScaleRatio);
+
+		// Display position
+		cursorPosition.innerHTML = "Image size " + image.naturalWidth + ' x ' + image.naturalHeight;
+		cursorPosition.innerHTML += "<br>Resized to " + image.width + ' x ' + image.height;
+		cursorPosition.innerHTML += "<br>Scale ratio " + imageScaleRatio;
+		cursorPosition.innerHTML += "<br>Cursor (px) left=" + left + ' top=' + top;
+		cursorPosition.innerHTML += "<br>Cursor (%) left=" + leftPercentage + ' top=' + topPercentage;
+		cursorPosition.innerHTML += "<br>Cursor (scaled) left=" + scaledLeft + ' top=' + scaledTop;
+	};
+
+	// Re-place view elements
+	window.onresize = function()
+	{
+		calculateImageScaleRatio();
+		updateViewElements();
+	};
+
+	/*
+	Initialization
+	*/
+
+	initialize(0.1);
+</script>

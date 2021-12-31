@@ -1,0 +1,189 @@
+/* Required for AndiDroid */
+body, html, .card {
+	margin: 0;
+	padding: 0;
+	width: 100vw;
+	height: 100vh;
+	max-width: 100vw;
+	max-height: 100vh;
+	overflow: auto;
+}
+
+.card {
+	font-family: arial;
+	font-size: 20px;
+	text-align: center;
+	color: black;
+	background-color: white;
+}
+
+/*
+Content
+*/
+
+annotated {
+	position: relative;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	display: block;
+}
+
+annotated.debug {
+	outline: 1px solid green;
+}
+
+translations,
+words {
+	display: inline-block;
+	margin: 0 auto;
+	text-align: left;
+}
+
+words {
+	opacity: 1;
+}
+
+words > word {
+	display: block;
+	position: absolute;
+	font-size: 1rem;
+	outline: 1px solid pink;
+	color: transparent;
+	overflow: hidden;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+words > word:hover {
+	color: pink;
+	font-weight: bold;
+}
+
+words.hidden > word {
+	outline: 1px solid transparent;
+}
+
+translations {
+	opacity: 0;
+	pointer-events: none;
+}
+
+translations.visible {
+	opacity: 1;
+}
+
+translation {
+	display: block;
+	position: absolute;
+	font-size: 0.9rem;
+	background: white;
+	border: 2px solid black;
+	border-radius: 5px;
+	color: black;
+	padding: 0.5em;
+	word-break: keep-all;
+	/*font-family: "CC Wild Words";*/
+}
+
+/*
+Front / Back
+*/
+
+img {
+	user-select: none;
+	margin: 0 auto;
+	padding: 0;
+	text-align: center;
+}
+
+img.debug {
+	outline: 1px solid red;
+}
+
+#popup {
+	display: none;
+	color: black;
+	background: white;
+	padding: 5px;
+	position: absolute;
+	border: 1px solid black;
+	border-radius: 3px;
+	font-size: 1rem;
+	text-align: left;
+}
+
+#popup > .reading {
+	font-size: 1rem;
+	color: rgb(44, 44, 44);
+	margin-bottom: 6px;
+	border-bottom: 1px solid lightgrey;
+	display: inline-block;
+}
+
+#popup > .meaning {
+	font-size: 0.9rem;
+	color: black;
+}
+
+#controls {
+	padding: 0.5rem;
+	user-select: none;
+}
+
+#controls > button {
+	border: 1px solid lightgrey;
+	border-radius: 2px;
+	padding: 0.3rem 0.5rem;
+}
+
+#controls > button.on {
+	background: rgb(127, 202, 127);
+}
+
+#controls > button.off {
+	background: rgb(219, 128, 128);
+}
+
+/*
+Debug
+*/
+
+#cursor-position {
+	display: none;
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	color: black;
+	font-size: 0.8rem;
+	text-align: left;
+	font-weight: bold;
+	background: white;
+	user-select: none;
+}
+
+#cursor-position.visible {
+	display: block;
+}
+
+#console {
+	display: none;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	color: white;
+	font-size: 0.8rem;
+	text-align: left;
+	font-weight: bold;
+	background: black;
+	user-select: none;
+	width: 100%;
+	height: 15%;
+	overflow-y: auto;
+	padding: 0.5rem;
+	box-sizing: border-box;
+}
+
+#console.visible {
+	display: block;
+}
