@@ -5,7 +5,9 @@
 	<button class="off" onclick="onToggleDebug(this)">Debug</button>
 </div>
 
-{{Content}}
+<div id="content">
+	{{Content}}
+</div>
 
 <div id="popup">
 	<div class="reading"></div>
@@ -16,10 +18,10 @@
 <div id="cursor-position"></div>
 
 <script>
-	var annotated = document.getElementsByTagName("annotated")[0];
-	var image = document.getElementsByTagName("img")[0];
-	var words = document.getElementsByTagName("words")[0];
-	var translations = document.getElementsByTagName("translations")[0];
+	var content = document.getElementById("content");
+	var image = content.getElementsByTagName("img")[0];
+	var words = content.getElementsByTagName("words")[0];
+	var translations = content.getElementsByTagName("translations")[0];
 	var popup = document.getElementById("popup");
 	var cursorPosition = document.getElementById("cursor-position");
 	var console = document.getElementById("console");
@@ -66,7 +68,7 @@
 		height = height * imageScaleRatio;
 
 		// Take into account the fact that there's some space between
-		// the annotated (green outline) and the image (red outline)
+		// the content (green outline) and the image (red outline)
 		left += (image.offsetLeft);
 		top += (image.offsetTop);
 
@@ -217,7 +219,7 @@
 	{
 		toggleButtonState(button);
 
-		annotated.classList.toggle("debug");
+		content.classList.toggle("debug");
 		image.classList.toggle("debug");
 		console.classList.toggle("visible");
 		cursorPosition.classList.toggle("visible");
@@ -228,8 +230,8 @@
 		var reading = event.target.getAttribute("reading");
 		var meaning = event.target.getAttribute("meaning");
 
-		var left = annotated.offsetLeft + 10;
-		var top = annotated.offsetTop + 10;
+		var left = content.offsetLeft + 10;
+		var top = content.offsetTop + 10;
 
 		var parent = event.target;
 		var translation = event.target.parentNode.parentNode;
@@ -277,9 +279,9 @@
 		var left = event.pageX;
 		var top = event.pageY;
 
-		// Left and top are now relative to the annotated (green outline)
-		left -= annotated.offsetLeft;
-		top -= annotated.offsetTop;
+		// Left and top are now relative to the content (green outline)
+		left -= content.offsetLeft;
+		top -= content.offsetTop;
 
 		// Left and top are now relative to the img (red outline)
 		left -= image.offsetLeft;
