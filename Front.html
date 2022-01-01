@@ -33,14 +33,15 @@
 			<div>
 				<input id="meaning" placeholder="meaning" type="text"/>
 			</div>
-			<button id="set-word" onclick="onSetWord()">Add</button>
 		</div>
 		<div id="translation-fields" class="hidden">
 			<div>
 				<textarea id="translation" placeholder="translation" cols="20" rows="4"></textarea>
 			</div>
-			<button id="set-translation" onclick="onSetTranslation()">Add</button>
 		</div>
+
+		<button id="button-set" onclick="onAddOrUpdateButton()">Add</button>
+		<button id="button-delete" class="hidden" onclick="onDeleteButton()">Delete</button>
 	</div>
 </div>
 
@@ -74,6 +75,7 @@
 	var editingWord = null;
 	var editingTranslation = null;
 	var editMode = false;
+	var viewMode = "word"; // or "translation"
 
 	/*
 	Function
@@ -363,8 +365,10 @@
 
 		if (wordFields.className === "hidden") {
 			button.innerHTML = "Word <-> <b>Translation</b>";
+			viewMode = "translation";
 		} else {
 			button.innerHTML = "<b>Word</b> <-> Translation";
+			viewMode = "word";
 		}
 
 		translations.classList.toggle("visible");
@@ -486,12 +490,14 @@
 		var wordField = document.querySelector("input#word");
 		var readingField = document.querySelector("input#reading");
 		var meaningField = document.querySelector("input#meaning");
-		var setWordButton = document.getElementById("set-word");
+		var buttonSet = document.getElementById("button-set");
+		var buttonDelete = document.getElementById("button-delete");
 
 		wordField.value = event.target.innerHTML;
 		readingField.value = reading;
 		meaningField.value = meaning;
-		setWordButton.innerText = "Update";
+		buttonSet.innerText = "Update";
+		buttonDelete.classList.remove("hidden");
 
 		// Move the draggable rectangle over the word
 		left = left * imageScaleRatio;
@@ -501,6 +507,7 @@
 		moveDraggable(left, top, width, height);
 
 		editingWord = event.target;
+		editingTranslation = null;
 	};
 
 	var onTranslationMouseClick = function(event)
@@ -519,11 +526,12 @@
 		var height = Number(event.target.getAttribute("height"));
 
 		var translationField = document.querySelector("textarea#translation");
-		var setTranslationButton = document.getElementById("set-translation");
+		var buttonSet = document.getElementById("button-set");
+		var buttonDelete = document.getElementById("button-delete");
 
 		translationField.value = text;
-		editingTranslation = event.target;
-		setTranslationButton.innerText = "Update";
+		buttonSet.innerText = "Update";
+		buttonDelete.classList.remove("hidden");
 
 		// Move the draggable rectangle over the translation
 		left = left * imageScaleRatio;
@@ -532,99 +540,113 @@
 		height = height * imageScaleRatio;
 		moveDraggable(left, top, width, height);
 
-		editingWord = event.target;
+		editingWord = null;
+		editingTranslation = event.target;
 	};
 
-	var onSetWord = function()
+	var onAddOrUpdateButton = function()
 	{
+		var rect = getScalledRect();
+
 		var wordField = document.querySelector("input#word");
 		var readingField = document.querySelector("input#reading");
 		var meaningField = document.querySelector("input#meaning");
-
-		// Empty fields
-		if (!wordField.value && !readingField.value && !meaningField.value) {
-			return;
-		}
-
-		var isNew = (editingWord === null);
-		var rect = getScalledRect();
-
-		// Create new element
-		if (isNew) {
-			var textNode = document.createTextNode(wordField.value.trim());
-
-			editingWord = document.createElement("word");
-			editingWord.appendChild(textNode);
-		} else {
-			editingWord.innerHTML = wordField.value.trim();
-		}
-
-		editingWord.setAttribute("reading", readingField.value.trim());
-		editingWord.setAttribute("meaning", meaningField.value.trim());
-		editingWord.setAttribute("left", rect.left);
-		editingWord.setAttribute("top", rect.top);
-		editingWord.setAttribute("width", rect.width);
-		editingWord.setAttribute("height", rect.height);
-
-		// Add element
-		if (isNew) {
-			words.appendChild(editingWord);
-		}
-
-		// Place element
-		updateViewElements();
-
-		// Clear fields
-		wordField.value = "";
-		readingField.value = "";
-		meaningField.value = "";
-
-		// Reset
-		var setWordButton = document.getElementById("set-word");
-		setWordButton.innerText = "Add";
-		editingWord = null;
-	};
-
-	var onSetTranslation = function()
-	{
 		var translationField = document.querySelector("textarea#translation");
 
-		// Empty field
-		if (!translationField.value) {
-			return;
+		if (viewMode === "word") {
+			// Empty fields
+			if (!wordField.value && !readingField.value && !meaningField.value) {
+				return;
+			}
+
+			var isNew = (editingWord === null);
+
+			// Create new element
+			if (isNew) {
+				var textNode = document.createTextNode(wordField.value.trim());
+
+				editingWord = document.createElement("word");
+				editingWord.appendChild(textNode);
+
+				// Add element
+				words.appendChild(editingWord);
+			} else {
+				editingWord.innerHTML = wordField.value.trim();
+			}
+
+			editingWord.setAttribute("reading", readingField.value.trim());
+			editingWord.setAttribute("meaning", meaningField.value.trim());
+			editingWord.setAttribute("left", rect.left);
+			editingWord.setAttribute("top", rect.top);
+			editingWord.setAttribute("width", rect.width);
+			editingWord.setAttribute("height", rect.height);
+		} else if (viewMode === "translation") {
+			// Empty field
+			if (!translationField.value) {
+				return;
+			}
+
+			var isNew = (editingTranslation === null);
+
+			// Create new element
+			if (isNew) {
+				var textNode = document.createTextNode(translationField.value.trim());
+
+				editingTranslation = document.createElement("translation");
+				editingTranslation.appendChild(textNode);
+
+				// Add element
+				translations.appendChild(editingTranslation);
+			} else {
+				editingTranslation.innerHTML = translationField.value.trim();
+			}
+
+			editingTranslation.setAttribute("left", rect.left);
+			editingTranslation.setAttribute("top", rect.top);
+			editingTranslation.setAttribute("width", rect.width);
+			editingTranslation.setAttribute("height", rect.height);
 		}
-
-		var isNew = (editingTranslation === null);
-		var rect = getScalledRect();
-
-		// Create new element
-		if (isNew) {
-			var textNode = document.createTextNode(translationField.value.trim());
-
-			editingTranslation = document.createElement("translation");
-			editingTranslation.appendChild(textNode);
-
-			// Add element
-			translations.appendChild(editingTranslation);
-		} else {
-			editingTranslation.innerHTML = translationField.value.trim();
-		}
-
-		editingTranslation.setAttribute("left", rect.left);
-		editingTranslation.setAttribute("top", rect.top);
-		editingTranslation.setAttribute("width", rect.width);
-		editingTranslation.setAttribute("height", rect.height);
 
 		// Place element
 		updateViewElements();
 
 		// Clear field
+		wordField.value = "";
+		readingField.value = "";
+		meaningField.value = "";
 		translationField.value = "";
 
 		// Reset
-		var setTranslationButton = document.getElementById("set-translation");
-		setTranslationButton.innerText = "Add";
+		var buttonSet = document.getElementById("button-set");
+		var buttonDelete = document.getElementById("button-delete");
+
+		buttonSet.innerText = "Add";
+		buttonDelete.classList.add("hidden");
+
+		editingWord = null;
 		editingTranslation = null;
+	};
+
+	var onDeleteButton = function()
+	{
+		if (editingWord) {
+			words.removeChild(editingWord);
+		} else if (editingTranslation) {
+			translations.removeChild(editingTranslation);
+		}
+
+		// Reset
+		var buttonSet = document.getElementById("button-set");
+		var buttonDelete = document.getElementById("button-delete");
+
+		buttonSet.innerText = "Add";
+		buttonDelete.classList.add("hidden");
+
+		// Clear fields
+		wordField.value = "";
+		readingField.value = "";
+		meaningField.value = "";
+		translationField.value = "";
 	};
 
 	var onCopyContentHtml = function()

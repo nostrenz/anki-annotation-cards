@@ -249,10 +249,7 @@ Edit GUI
 	margin-top: 3px;
 }
 
-/*#fields > div.visible {
-	display: block;
-}*/
-#fields > div.hidden {
+#fields > .hidden {
 	display: none;
 }
 
