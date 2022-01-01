@@ -2,12 +2,37 @@
 	<button onclick="window.onresize()">Resize</button>
 	<button class="on" onclick="onToggleWords(this)">Words</button>
 	<button class="off" onclick="onToggleTranslations(this)">Translations</button>
+	<button class="off" onclick="onToggleEdit(this)">Edit</button>
 	<button class="off" onclick="onToggleDebug(this)">Debug</button>
+</div>
+
+<div id="edit-gui">
+	<div>Word</div>
+	<input id="word" placeholder="word" type="text"/>
+	<input id="reading" placeholder="reading" type="text"/>
+	<input id="meaning" placeholder="meaning" type="text"/>
+	<button onclick="onSetWord()">Set</button>
+
+	<div>Translation</div>
+	<input id="translation" placeholder="translation" type="text"/>
+	<button onclick="onSetTranslation()">Set</button>
+
+	<div>Content</div>
+	<input id="html" placeholder="HTML will end up here" type="text"/>
+	<button onclick="onCopyContentHtml()">Copy</button>
 </div>
 
 <div id="content">
 	{{Content}}
 </div>
+
+<div id="draggable">
+	<div class="handles">
+		<div class="handle" id="top-left-handle">TL</div>
+		<div class="handle" id="bottom-right-handle">BR</div>
+	</div>
+</div>
+<div id="rectangle"></div>
 
 <div id="popup">
 	<div class="reading"></div>
@@ -25,8 +50,14 @@
 	var popup = document.getElementById("popup");
 	var cursorPosition = document.getElementById("cursor-position");
 	var console = document.getElementById("console");
+	var topLeftHandle = document.getElementById("top-left-handle");
+	var bottomRightHandle = document.getElementById("bottom-right-handle");
+	var rectangle = document.getElementById("rectangle");
 	var imageScaleRatio = 1;
 	var initializations = 0;
+	var editMode = false;
+	var wordCollection = [];
+	var translationCollection = [];
 
 	/*
 	Function
@@ -69,8 +100,8 @@
 
 		// Take into account the fact that there's some space between
 		// the content (green outline) and the image (red outline)
-		left += (image.offsetLeft);
-		top += (image.offsetTop);
+		left += image.offsetLeft;
+		top += image.offsetTop;
 
 		element.style.left = left + "px";
 		element.style.top = top + "px";
@@ -89,10 +120,12 @@
 			// Unbind previous events
 			words.children[i].removeEventListener("mouseover", onWordMouseOver);
 			words.children[i].removeEventListener("mouseleave", onWordMouseLeave);
+			words.children[i].removeEventListener("click", onWordMouseClick);
 
-			// Register mouse over events on words
+			// Register events
 			words.children[i].addEventListener("mouseover", onWordMouseOver);
 			words.children[i].addEventListener("mouseleave", onWordMouseLeave);
+			words.children[i].addEventListener("click", onWordMouseClick);
 		}
 
 		// Place translations
@@ -101,6 +134,12 @@
 
 			// Resize font
 			translations.children[i].style.fontSize = (imageScaleRatio * 2) + "rem";
+
+			// Unbind previous events
+			translations.children[i].removeEventListener("click", onTranslationMouseClick);
+
+			// Register events
+			translations.children[i].addEventListener("click", onTranslationMouseClick);
 		}
 	};
 
@@ -156,10 +195,70 @@
 		}
 	};
 
+	var buildContentHtml = function()
+	{
+		var html = '';
+
+		html += '<img src="[[IMG_SRC]]">';
+		html += '<words>';
+
+		for (var i = 0; i < wordCollection.length; i++) {
+			var word = wordCollection[i].word;
+			var reading = wordCollection[i].reading;
+			var meaning = wordCollection[i].meaning;
+			var left = wordCollection[i].left;
+			var top = wordCollection[i].top;
+			var width = wordCollection[i].width;
+			var height = wordCollection[i].height;
+
+			html += '<word reading="'+ reading +'" meaning="' + meaning + '" left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + word + '</word>';
+		}
+
+		html += '</words>';
+		html += '<translations>';
+
+		for (var i = 0; i < translationCollection.length; i++) {
+			var text = translationCollection[i].text;
+			var left = translationCollection[i].left;
+			var top = translationCollection[i].top;
+			var width = translationCollection[i].width;
+			var height = translationCollection[i].height;
+
+			html += '<translation left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + text + '</translation>';
+		}
+
+		html += '</translations>';
+
+		// Anki doesn't work if we try to concat the image
+		// attribute directly, so we need to replace it instead.
+		html = html.replace("[[IMG_SRC]]", image.getAttribute("src"));
+
+		return html;
+	};
+
+	var setElementPosition = function(element, left, top)
+	{
+		element.style.left = left + "px";
+		element.style.top = top + "px";
+	};
+
 	var toggleButtonState = function(button)
 	{
 		button.classList.toggle("off");
 		button.classList.toggle("on");
+	};
+
+	var getScalledRect = function()
+	{
+		var left = rectangle.offsetLeft - content.offsetLeft - image.offsetLeft;
+		var top = rectangle.offsetTop - content.offsetTop - image.offsetTop;
+
+		return {
+			left: Math.round(left / imageScaleRatio),
+			top: Math.round(top / imageScaleRatio),
+			width: Math.round(rectangle.offsetWidth / imageScaleRatio),
+			height: Math.round(rectangle.offsetHeight / imageScaleRatio)
+		};
 	};
 
 	// On AnkiDroid, it might take a few seconds for the view to be
@@ -215,6 +314,20 @@
 		translations.classList.toggle("visible");
 	};
 
+	var onToggleEdit = function(button)
+	{
+		var editgGui = document.getElementById("edit-gui");
+		editgGui.classList.toggle("visible");
+
+		// Since the edit GUI takes up some space
+		// we need to replace the view elements
+		window.onresize();
+
+		// Edit GUI is now enabled
+		toggleButtonState(button);
+		editMode = true;
+	};
+
 	var onToggleDebug = function(button)
 	{
 		toggleButtonState(button);
@@ -258,6 +371,93 @@
 	var onWordMouseLeave = function(event)
 	{
 		popup.style.display = "none";
+	};
+
+	var onWordMouseClick = function(event)
+	{
+		// Edit GUI not enabled
+		if (editMode !== true) {
+			return;
+		}
+
+		var nodes = Array.prototype.slice.call(words.children);
+		var index = nodes.indexOf(event.target);
+
+		var reading = event.target.getAttribute("reading");
+		var meaning = event.target.getAttribute("meaning");
+
+		var wordField = document.querySelector("input#word");
+		var readingField = document.querySelector("input#reading");
+		var meaningField = document.querySelector("input#meaning");
+
+		wordField.value = event.target.innerHTML;
+		readingField.value = reading;
+		meaningField.value = meaning;
+
+		// Store word
+		wordCollection[index] = {
+			word:    event.target.innerHTML,
+			reading: reading,
+			meaning: meaning/*,
+			left:
+			top:
+			width:
+			height:*/
+		};
+	};
+
+	var onTranslationMouseClick = function(event)
+	{
+		// Edit GUI not enabled
+		if (editMode !== true) {
+			return;
+		}
+
+		var nodes = Array.prototype.slice.call(translations.children);
+		var index = nodes.indexOf(event.target);
+
+		var text = event.target.innerHTML;
+
+		var translationField = document.querySelector("input#translation");
+
+		translationField.value = text;
+
+		// Store translation
+		translationCollection[index] = {
+			text: text,
+		};
+	};
+
+	var onSetWord = function()
+	{
+		var index = wordCollection.length;
+		var wordField = document.querySelector("input#word");
+		var readingField = document.querySelector("input#reading");
+		var meaningField = document.querySelector("input#meaning");
+
+		wordCollection[index] = getScalledRect();
+		wordCollection[index].word = wordField.value;
+		wordCollection[index].reading = readingField.value;
+		wordCollection[index].meaning = meaningField.value;
+	};
+
+	var onSetTranslation = function()
+	{
+		var index = wordCollection.length;
+		var translationField = document.querySelector("input#translation");
+
+		translationCollection[index] = getScalledRect();
+		translationCollection[index].text = translationField.value;
+	};
+
+	var onCopyContentHtml = function()
+	{
+		var htmlInput = document.getElementById("html");
+
+		htmlInput.value = buildContentHtml();
+
+		htmlInput.select();
+		document.execCommand("copy");
 	};
 
 	document.onmousemove = function handleMouseMove(event) {
@@ -320,4 +520,94 @@
 	*/
 
 	initialize(0.1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Init rectangle size
+rectangle.style.width = "150px";
+rectangle.style.height = "150px";
+
+//Make the DIV element draggagle:
+dragElement(topLeftHandle);
+dragElement(bottomRightHandle);
+
+function dragElement(elmnt) {
+	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+	elmnt.onmousedown = dragMouseDown;
+
+	function dragMouseDown(e) {
+		e = e || window.event;
+		e.preventDefault();
+		// get the mouse cursor position at startup:
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		document.onmouseup = closeDragElement;
+		document.onmousemove = elementDrag;
+	}
+
+	function elementDrag(e) {
+		e = e || window.event;
+		e.preventDefault();
+
+		// calculate the new cursor position:
+		pos1 = pos3 - e.clientX;
+		pos2 = pos4 - e.clientY;
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+
+		var top = elmnt.offsetTop - pos2;
+		var left = elmnt.offsetLeft - pos1;
+
+		// set the element's new position:
+		elmnt.style.top = top + "px";
+		elmnt.style.left = left + "px";
+
+		var handleId = elmnt.getAttribute("id");
+
+		// Resize rectangle accordingly
+		if (handleId === "top-left-handle") {
+			setElementPosition(rectangle, left, top);
+			bottomRightHandle.style.left = (topLeftHandle.offsetLeft + rectangle.offsetWidth - bottomRightHandle.offsetWidth) + "px";
+			bottomRightHandle.style.top = (topLeftHandle.offsetTop + rectangle.offsetHeight - bottomRightHandle.offsetHeight) + "px";
+		} if (handleId === "bottom-right-handle") {
+			rectangle.style.width = (bottomRightHandle.offsetLeft - topLeftHandle.offsetLeft + bottomRightHandle.offsetWidth) + "px";
+			rectangle.style.height = (bottomRightHandle.offsetTop - topLeftHandle.offsetTop + bottomRightHandle.offsetHeight) + "px";
+		}
+
+		var rectangleLeft = rectangle.offsetLeft - content.offsetLeft - image.offsetLeft;
+		var rectangleTop = rectangle.offsetTop - content.offsetTop - image.offsetTop;
+		var rectangleWidth = rectangle.offsetWidth;
+		var rectangleHeight = rectangle.offsetHeight;
+
+		cursorPosition.innerHTML = "";
+		cursorPosition.innerHTML += "<br>Draggable (px) left=" + rectangleLeft + " top=" + rectangleTop + " width=" + rectangleWidth + " height=" + rectangleHeight;
+		cursorPosition.innerHTML += "<br>Draggable (sclaed) left=" + Math.round(rectangleLeft/imageScaleRatio) + " top=" + Math.round(rectangleTop/imageScaleRatio) + " width=" + Math.round(rectangleWidth/imageScaleRatio) + " height=" + Math.round(rectangleHeight/imageScaleRatio);
+	}
+
+	function closeDragElement() {
+		/* stop moving when mouse button is released:*/
+		document.onmouseup = null;
+		document.onmousemove = null;
+	}
+}
 </script>
