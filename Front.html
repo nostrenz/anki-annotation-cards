@@ -370,22 +370,27 @@
 		translations.classList.toggle("visible");
 	};
 
-	var onToggleEdit = function(button)
+	/**
+	 * Given values should be relative to the image
+	 * (0,0 being the top-left corner) and not scaled.
+	 */
+	var moveDraggable = function(left, top, width, height)
 	{
-		var editgGui = document.getElementById("edit-gui");
-		editgGui.classList.toggle("visible");
+		// Make positions relative to the image
+		left += (content.offsetLeft + image.offsetLeft);
+		top += (content.offsetTop + image.offsetTop);
 
-		// Place the draggable rectangle at the top-left corner of the image
-		var left = content.offsetLeft + image.offsetLeft;
-		var top = content.offsetTop + image.offsetTop;
-
-		var draggable = document.getElementById("draggable");
+		// Place the rectangle to the new position
 		rectangle.style.left = left + "px";
 		rectangle.style.top = top + "px";
 
-		// Place the top-left handle at the right position
+		// Place the top-left handle to the new position
 		topLeftHandle.style.left = left + "px";
 		topLeftHandle.style.top = top + "px";
+
+		// Resize the rectangle
+		rectangle.style.width = width + "px";
+		rectangle.style.height = height + "px";
 
 		// Place the bottom-right handle at the right position
 		bottomRightHandle.style.left = (topLeftHandle.offsetLeft + rectangle.offsetWidth - bottomRightHandle.offsetWidth) + "px";
@@ -394,6 +399,15 @@
 		// Place the fields close to the draggable rectangle
 		fields.style.left = (left + rectangle.offsetWidth) + "px";
 		fields.style.top = top + "px";
+	};
+
+	var onToggleEdit = function(button)
+	{
+		var editgGui = document.getElementById("edit-gui");
+		editgGui.classList.toggle("visible");
+
+		// Place the draggable rectangle at the top-left corner of the image
+		moveDraggable(0, 0);
 
 		// Since the edit GUI takes up some space
 		// we need to replace the view elements
@@ -464,6 +478,10 @@
 
 		var reading = event.target.getAttribute("reading");
 		var meaning = event.target.getAttribute("meaning");
+		var left = Number(event.target.getAttribute("left"));
+		var top = Number(event.target.getAttribute("top"));
+		var width = Number(event.target.getAttribute("width"));
+		var height = Number(event.target.getAttribute("height"));
 
 		var wordField = document.querySelector("input#word");
 		var readingField = document.querySelector("input#reading");
@@ -474,6 +492,13 @@
 		readingField.value = reading;
 		meaningField.value = meaning;
 		setWordButton.innerText = "Update";
+
+		// Move the draggable rectangle over the word
+		left = left * imageScaleRatio;
+		top = top * imageScaleRatio;
+		width = width * imageScaleRatio;
+		height = height * imageScaleRatio;
+		moveDraggable(left, top, width, height);
 
 		editingWord = event.target;
 	};
@@ -488,12 +513,24 @@
 		}
 
 		var text = event.target.innerHTML;
+		var left = Number(event.target.getAttribute("left"));
+		var top = Number(event.target.getAttribute("top"));
+		var width = Number(event.target.getAttribute("width"));
+		var height = Number(event.target.getAttribute("height"));
+
 		var translationField = document.querySelector("textarea#translation");
 		var setTranslationButton = document.getElementById("set-translation");
 
 		translationField.value = text;
 		editingTranslation = event.target;
 		setTranslationButton.innerText = "Update";
+
+		// Move the draggable rectangle over the translation
+		left = left * imageScaleRatio;
+		top = top * imageScaleRatio;
+		width = width * imageScaleRatio;
+		height = height * imageScaleRatio;
+		moveDraggable(left, top, width, height);
 
 		editingWord = event.target;
 	};
@@ -510,25 +547,24 @@
 		}
 
 		var isNew = (editingWord === null);
+		var rect = getScalledRect();
 
 		// Create new element
 		if (isNew) {
-			editingWord = document.createElement("word");
-
 			var textNode = document.createTextNode(wordField.value.trim());
-			var rect = getScalledRect();
 
+			editingWord = document.createElement("word");
 			editingWord.appendChild(textNode);
-			editingWord.setAttribute("left", rect.left);
-			editingWord.setAttribute("top", rect.top);
-			editingWord.setAttribute("width", rect.width);
-			editingWord.setAttribute("height", rect.height);
 		} else {
 			editingWord.innerHTML = wordField.value.trim();
 		}
 
 		editingWord.setAttribute("reading", readingField.value.trim());
 		editingWord.setAttribute("meaning", meaningField.value.trim());
+		editingWord.setAttribute("left", rect.left);
+		editingWord.setAttribute("top", rect.top);
+		editingWord.setAttribute("width", rect.width);
+		editingWord.setAttribute("height", rect.height);
 
 		// Add element
 		if (isNew) {
@@ -559,25 +595,25 @@
 		}
 
 		var isNew = (editingTranslation === null);
+		var rect = getScalledRect();
 
 		// Create new element
 		if (isNew) {
-			editingTranslation = document.createElement("translation");
-
 			var textNode = document.createTextNode(translationField.value.trim());
-			var rect = getScalledRect();
 
+			editingTranslation = document.createElement("translation");
 			editingTranslation.appendChild(textNode);
-			editingTranslation.setAttribute("left", rect.left);
-			editingTranslation.setAttribute("top", rect.top);
-			editingTranslation.setAttribute("width", rect.width);
-			editingTranslation.setAttribute("height", rect.height);
 
 			// Add element
 			translations.appendChild(editingTranslation);
 		} else {
 			editingTranslation.innerHTML = translationField.value.trim();
 		}
+
+		editingTranslation.setAttribute("left", rect.left);
+		editingTranslation.setAttribute("top", rect.top);
+		editingTranslation.setAttribute("width", rect.width);
+		editingTranslation.setAttribute("height", rect.height);
 
 		// Place element
 		updateViewElements();
