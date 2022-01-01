@@ -36,7 +36,7 @@ words > word {
 	display: block;
 	position: absolute;
 	font-size: 1rem;
-	outline: 1px solid pink;
+	outline: 1px dotted pink;
 	color: transparent;
 	overflow: hidden;
 	box-sizing: border-box;
@@ -44,8 +44,7 @@ words > word {
 }
 
 words > word:hover {
-	color: pink;
-	font-weight: bold;
+	outline: 2px solid pink;
 }
 
 words.hidden > word {
@@ -61,15 +60,20 @@ translations.visible {
 }
 
 translation {
-	display: block;
+	/* Display: table will the translation element to grow to fit the text,
+	while display: block will ensure the element is always sized like defined by
+	the Content HTML but the contained text might overflow. */
+	display: table/*block*/;
 	position: absolute;
-	font-size: 0.9rem;
+	font-size: 10%;
 	background: white;
 	border: 2px solid black;
 	border-radius: 5px;
 	color: black;
 	padding: 0.5em;
 	word-break: keep-all;
+	box-sizing: border-box;
+	text-align: center;
 	/*font-family: "CC Wild Words";*/
 }
 
@@ -131,18 +135,22 @@ img.debug {
 	user-select: none;
 }
 
-#controls > button {
+button {
 	border: 1px solid lightgrey;
 	border-radius: 2px;
 	padding: 0.3rem 0.5rem;
 }
 
-#controls > button.on {
-	background: rgb(127, 202, 127);
+button.on {
+	border-color: rgb(115, 184, 115);
+	background: #7fca7f;
+	color: white;
 }
 
-#controls > button.off {
-	background: rgb(219, 128, 128);
+button.off {
+	border-color: rgb(199, 118, 118);
+	background: #db8080;
+	color: white;
 }
 
 /*
@@ -157,15 +165,19 @@ Edit GUI
 	display: block;
 }
 
-/*#edit-gui input#html {
-	display: none;
-}*/
+#edit-gui > p {
+	font-size: 1rem;
+}
 
-#draggable {
+#draggable,
+#rectangle {
 	position: absolute;
-	z-index: 9;
 	top: 0;
 	left: 0;
+}
+
+#draggable {
+	z-index: 9;
 	pointer-events: none;
 }
 
@@ -176,21 +188,32 @@ Edit GUI
 	min-height: 1rem;
 	max-width: 1rem;
 	max-height: 1rem;
-	border: 1px solid black;
 	position: absolute;
 	font-size: 0.7rem;
 	text-align: center;
 	user-select: none;
 	pointer-events: all;
+	color: transparent;
+}
+
+#draggable.debug > .handles > .handle {
+	border: 1px solid black;
+	color: black;
 }
 
 #top-left-handle {
 	top: 0;
 	left: 0;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	cursor: move;
 }
 #bottom-right-handle {
 	bottom: 0;
 	right: 0;
+	border-left: 1px solid black;
+	border-top: 1px solid black;
+	cursor: se-resize;
 }
 
 #rectangle {
@@ -198,8 +221,39 @@ Edit GUI
 	height: 150px;
 	opacity: 0.3;
 	background: rgba(0, 0, 0, 0.575);
-	position: absolute;
 	outline: 1px solid black;
+	z-index: 8; /* Just under the handles */
+}
+
+#fields {
+	position: absolute;
+	z-index: 7;
+	top: 0;
+	right: 0;
+	padding: 0.3rem;
+	box-sizing: border-box;
+	background-color: rgba(211, 211, 211, 0.555);
+	width: 200px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+#fields input,
+#fields textarea {
+	padding: 0.3rem;
+	border-radius: 3px;
+	border: 1px solid lightgrey;
+}
+
+#fields button {
+	margin-top: 3px;
+}
+
+/*#fields > div.visible {
+	display: block;
+}*/
+#fields > div.hidden {
+	display: none;
 }
 
 /*
