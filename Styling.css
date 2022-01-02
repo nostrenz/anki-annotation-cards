@@ -129,7 +129,7 @@ img.debug {
 #popup > .word > .writing {
 	color: rgb(44, 44, 44);
 	word-break: keep-all;
-	line-height: 14px;
+	line-height: 15px;
 }
 
 #popup > .word > .reading {
