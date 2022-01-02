@@ -59,6 +59,7 @@
 <div id="cursor-position"></div>
 
 <script>
+	var body = document.getElementsByTagName("body")[0];
 	var content = document.getElementById("content");
 	var image = content.getElementsByTagName("img")[0];
 	var words = content.getElementsByTagName("words")[0];
@@ -76,6 +77,8 @@
 	var editingTranslation = null;
 	var editMode = false;
 	var viewMode = "word"; // or "translation"
+	var lastRectangleLeft = 0;
+	var lastRectangleTop = 0;
 
 	/*
 	Function
@@ -273,13 +276,10 @@
 	{
 		var left = rectangle.offsetLeft - content.offsetLeft - image.offsetLeft;
 		var top = rectangle.offsetTop - content.offsetTop - image.offsetTop;
-		var body = document.getElementsByTagName("body")[0];
 
 		// Take scroll amount into account
-		if (body) {
-			left += body.scrollLeft;
-			top += body.scrollTop;
-		}
+		left += body.scrollLeft;
+		top += body.scrollTop;
 
 		return {
 			left: Math.round(left / imageScaleRatio),
@@ -322,8 +322,8 @@
 				}
 
 				// Init rectangle size
-				rectangle.style.width = "150px";
-				rectangle.style.height = "150px";
+				rectangle.style.width = "100px";
+				rectangle.style.height = "100px";
 
 				// Make the handle elements draggable
 				dragElement(topLeftHandle);
@@ -380,17 +380,16 @@
 	 */
 	var moveDraggable = function(left, top, width, height)
 	{
-		var body = document.getElementsByTagName("body")[0];
+		lastRectangleLeft = left;
+		lastRectangleTop = top;
 
 		// Make positions relative to the image
 		left += (content.offsetLeft + image.offsetLeft);
 		top += (content.offsetTop + image.offsetTop);
 
 		// Take scroll amount into account
-		if (body) {
-			left -= body.scrollLeft;
-			top -= body.scrollTop;
-		}
+		left -= body.scrollLeft;
+		top -= body.scrollTop;
 
 		// Place the rectangle to the new position
 		rectangle.style.left = left + "px";
@@ -402,8 +401,8 @@
 
 		// Resize the rectangle
 		if (width !== undefined && height !== undefined) {
-		rectangle.style.width = width + "px";
-		rectangle.style.height = height + "px";
+			rectangle.style.width = width + "px";
+			rectangle.style.height = height + "px";
 		}
 
 		// Place the bottom-right handle at the right position
@@ -717,6 +716,14 @@
 		cursorPosition.innerHTML += "<br>Cursor (scaled) left=" + scaledLeft + ' top=' + scaledTop;
 	};
 
+	// Move the draggable rectangle with the scroll
+	body.addEventListener("scroll", function(e) {
+		//left -= body.scrollLeft;
+		//top -= body.scrollTop;
+
+		moveDraggable(lastRectangleLeft, lastRectangleTop);
+	});
+
 	// Re-place view elements
 	window.onresize = function()
 	{
@@ -762,25 +769,24 @@
 
 			var top = elmnt.offsetTop - pos2;
 			var left = elmnt.offsetLeft - pos1;
-
-			// set the element's new position:
-			elmnt.style.top = top + "px";
-			elmnt.style.left = left + "px";
-
 			var handleId = elmnt.getAttribute("id");
 
 			// Resize rectangle accordingly
 			if (handleId === "top-left-handle") {
-				setElementPosition(rectangle, left, top);
-				setElementPosition(fields, left + rectangle.offsetWidth, rectangle.offsetTop);
+				// Make positions relative to the image
+				left -= (content.offsetLeft + image.offsetLeft);
+				top -= (content.offsetTop + image.offsetTop);
 
-				bottomRightHandle.style.left = (topLeftHandle.offsetLeft + rectangle.offsetWidth - bottomRightHandle.offsetWidth) + "px";
-				bottomRightHandle.style.top = (topLeftHandle.offsetTop + rectangle.offsetHeight - bottomRightHandle.offsetHeight) + "px";
+				moveDraggable(left, top);
 			} if (handleId === "bottom-right-handle") {
-				rectangle.style.width = (bottomRightHandle.offsetLeft - topLeftHandle.offsetLeft + bottomRightHandle.offsetWidth) + "px";
-				rectangle.style.height = (bottomRightHandle.offsetTop - topLeftHandle.offsetTop + bottomRightHandle.offsetHeight) + "px";
+				// Set the element's new position:
+				elmnt.style.top = top + "px";
+				elmnt.style.left = left + "px";
 
-				setElementPosition(fields, rectangle.offsetLeft + rectangle.offsetWidth, rectangle.offsetTop);
+				var width = (bottomRightHandle.offsetLeft - topLeftHandle.offsetLeft + bottomRightHandle.offsetWidth);
+				var height = (bottomRightHandle.offsetTop - topLeftHandle.offsetTop + bottomRightHandle.offsetHeight);
+
+				moveDraggable(lastRectangleLeft, lastRectangleTop, width, height);
 			}
 
 			var rectangleLeft = rectangle.offsetLeft - content.offsetLeft - image.offsetLeft;
