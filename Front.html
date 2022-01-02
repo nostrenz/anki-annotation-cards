@@ -307,45 +307,44 @@
 
 			calculateImageScaleRatio();
 
-			// Initialized
-			if (imageScaleRatio !== 1) {
-				// Create words element if needed
-				if (!words) {
-					words = document.createElement("words");
-					content.appendChild(words);
-				}
+			// Failed to obtain a scale ratio different than one, with might
+			// just be normal if the image isn't resized but it can also mean that
+			// the image wasn't yeat ready. In both cases we'll try again.
+			if (imageScaleRatio === 1 && initializations < 10) {
+				initializations++;
 
-				// Create translations element if needed
-				if (!translations) {
-					translations = document.createElement("translations");
-					content.appendChild(translations);
-				}
-
-				// Init rectangle size
-				rectangle.style.width = "100px";
-				rectangle.style.height = "100px";
-
-				// Make the handle elements draggable
-				dragElement(topLeftHandle);
-				dragElement(bottomRightHandle);
-
-				updateViewElements();
-				consoleLog("Initialized.");
+				// Try again
+				initialize(1);
 
 				return;
 			}
 
-			// Failed but we've already tried too many times
-			if (initializations > 9) {
-				consoleLog("Initialization aborted.");
+			// Now initialized, or we've already tried too many times
 
-				return;
+			// Create words element if needed
+			if (!words) {
+				words = document.createElement("words");
+				content.appendChild(words);
 			}
 
-			initializations++;
+			// Create translations element if needed
+			if (!translations) {
+				translations = document.createElement("translations");
+				content.appendChild(translations);
+			}
 
-			// Try again
-			initialize(1);
+			// Init rectangle size
+			rectangle.style.width = "100px";
+			rectangle.style.height = "100px";
+
+			// Make the handle elements draggable
+			dragElement(topLeftHandle);
+			dragElement(bottomRightHandle);
+
+			updateViewElements();
+			consoleLog("Initialized.");
+
+			return;
 		}, seconds);
 	};
 
