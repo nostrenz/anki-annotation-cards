@@ -126,7 +126,7 @@
 		element.style.width = width + "px";
 		element.style.height = height + "px";
 		element.style.maxWidth = width + "px";
-		element.style.maxWidth = height + "px";
+		element.style.maxHeight = height + "px";
 	};
 
 	var updateViewElements = function()
@@ -380,9 +380,17 @@
 	 */
 	var moveDraggable = function(left, top, width, height)
 	{
+		var body = document.getElementsByTagName("body")[0];
+
 		// Make positions relative to the image
 		left += (content.offsetLeft + image.offsetLeft);
 		top += (content.offsetTop + image.offsetTop);
+
+		// Take scroll amount into account
+		if (body) {
+			left -= body.scrollLeft;
+			top -= body.scrollTop;
+		}
 
 		// Place the rectangle to the new position
 		rectangle.style.left = left + "px";
@@ -393,8 +401,10 @@
 		topLeftHandle.style.top = top + "px";
 
 		// Resize the rectangle
+		if (width !== undefined && height !== undefined) {
 		rectangle.style.width = width + "px";
 		rectangle.style.height = height + "px";
+		}
 
 		// Place the bottom-right handle at the right position
 		bottomRightHandle.style.left = (topLeftHandle.offsetLeft + rectangle.offsetWidth - bottomRightHandle.offsetWidth) + "px";
@@ -411,7 +421,7 @@
 		editgGui.classList.toggle("visible");
 
 		// Place the draggable rectangle at the top-left corner of the image
-		moveDraggable(0, 0);
+		moveDraggable(0, 0, 100, 100);
 
 		// Since the edit GUI takes up some space
 		// we need to replace the view elements

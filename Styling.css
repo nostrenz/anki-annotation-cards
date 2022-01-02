@@ -206,6 +206,7 @@ Edit GUI
 	left: 0;
 	border-right: 1px solid black;
 	border-bottom: 1px solid black;
+	filter: invert(100%);
 	cursor: move;
 }
 #bottom-right-handle {
@@ -213,6 +214,7 @@ Edit GUI
 	right: 0;
 	border-left: 1px solid black;
 	border-top: 1px solid black;
+	filter: invert(100%);
 	cursor: se-resize;
 }
 
