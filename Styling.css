@@ -123,6 +123,7 @@ img.debug {
 	margin-bottom: 6px;
 	border-bottom: 1px solid lightgrey;
 	display: inline-block;
+	word-break: keep-all;
 }
 
 #popup > .meaning {
