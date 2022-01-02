@@ -462,14 +462,15 @@
 		readingElement[0].innerHTML = reading;
 		meaningElement[0].innerHTML = meaning;
 
-		// If the popup is out of the image, display in on the left of the parent instead
-		var popupTopRightCornerPos = left + popup.offsetWidth;
-		var imageRightX = content.offsetLeft + image.offsetLeft + image.offsetWidth;
-
 		popup.style.display = "block";
 
-		if (popupTopRightCornerPos >= imageRightX) {
-			left -= (10 + parent.offsetWidth + 108 + 10);
+		// Parent position relative to the image
+		var parentLeft = (parent.offsetLeft - content.offsetLeft - image.offsetLeft);
+
+		// Palce the popup to the lest of the parent instead of to the right of
+		// it if the parent is located in the second horizontal half of the image.
+		if (parentLeft > image.offsetWidth / 2) {
+			left -= (10 + parent.offsetWidth + popup.offsetWidth + 10);
 		}
 
 		popup.style.left = left + "px";
