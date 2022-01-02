@@ -51,7 +51,10 @@
 </div>
 
 <div id="popup">
-	<div class="reading"></div>
+	<div class="word">
+		<div class="reading"></div>
+		<div class="writing"></div>
+	</div>
 	<div class="meaning"></div>
 </div>
 
@@ -443,6 +446,7 @@
 
 	var onWordMouseOver = function(event)
 	{
+		var word = event.target.innerHTML;
 		var reading = event.target.getAttribute("reading");
 		var meaning = event.target.getAttribute("meaning");
 
@@ -456,11 +460,33 @@
 		left += parent.offsetLeft + parent.offsetWidth;
 		top += parent.offsetTop;
 
-		var readingElement = popup.getElementsByClassName("reading");
-		var meaningElement = popup.getElementsByClassName("meaning");
+		var writingElement = popup.getElementsByClassName("writing")[0];
+		var readingElement = popup.getElementsByClassName("reading")[0];
+		var meaningElement = popup.getElementsByClassName("meaning")[0];
 
-		readingElement[0].innerHTML = reading;
-		meaningElement[0].innerHTML = meaning;
+		writingElement.innerHTML = word;
+		readingElement.innerHTML = reading;
+		meaningElement.innerHTML = meaning;
+
+		readingElement.classList.remove("hidden");
+		writingElement.classList.remove("hidden");
+		meaningElement.classList.remove("hidden");
+
+		// No word or the reading is the same as the word
+		if (reading === word) {
+			writingElement.classList.add("hidden");
+		}
+
+		// Hide missing elements
+		if (!word) {
+			writingElement.classList.add("hidden");
+		}
+		if (!reading) {
+			readingElement.classList.add("hidden");
+		}
+		if (!meaning) {
+			meaningElement.classList.add("hidden");
+		}
 
 		popup.style.display = "block";
 

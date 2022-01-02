@@ -117,18 +117,37 @@ img.debug {
 	text-align: left;
 }
 
-#popup > .reading {
-	font-size: 1rem;
-	color: rgb(44, 44, 44);
+#popup > .word {
 	margin-bottom: 6px;
 	border-bottom: 1px solid lightgrey;
 	display: inline-block;
+	padding-bottom: 0.1rem;
+	box-sizing: border-box;
+}
+
+#popup > .word > .reading,
+#popup > .word > .writing {
+	color: rgb(44, 44, 44);
 	word-break: keep-all;
+	line-height: 14px;
+}
+
+#popup > .word > .reading {
+	font-size: 0.9rem;
+}
+
+#popup > .word > .writing {
+	font-size: 1.1rem;
+	font-weight: bold;
 }
 
 #popup > .meaning {
 	font-size: 0.9rem;
 	color: black;
+}
+
+#popup div.hidden {
+	display: none;
 }
 
 #controls {
