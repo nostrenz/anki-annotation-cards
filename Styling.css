@@ -113,7 +113,7 @@ img.debug {
 	position: absolute;
 	border: 1px solid black;
 	border-radius: 3px;
-	font-size: 1rem;
+	font-size: 12px;
 	text-align: left;
 }
 
@@ -129,26 +129,11 @@ img.debug {
 #popup > .word > .writing {
 	color: rgb(44, 44, 44);
 	word-break: keep-all;
-	line-height: 15px;
 }
 
-#popup > .word > .reading {
-	font-size: 0.9rem;
-}
-
-#popup > .word > .writing {
-	font-size: 1.1rem;
-	font-weight: bold;
-}
-
-#popup > .meaning {
-	font-size: 0.9rem;
-	color: black;
-}
-
-#popup div.hidden {
-	display: none;
-}
+#popup > .word > .writing { font-weight: bold; }
+#popup > .meaning { color: black; }
+#popup div.hidden { display: none; }
 
 #controls {
 	padding: 0.5rem;

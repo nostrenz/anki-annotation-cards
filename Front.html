@@ -537,6 +537,9 @@
 	 */
 	var onChangeFontSize = function(input)
 	{
+		popup.style.fontSize = (14 * input.value) + "px";
+		popup.style.lineHeight = (15 * input.value) + "px";
+
 		for (var i = 0; i < translations.children.length; i++) {
 			translations.children[i].style.fontSize = (14 * input.value) + "px";
 		}
