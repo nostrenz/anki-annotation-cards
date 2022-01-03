@@ -1,18 +1,12 @@
+<div id="flash"></div>
+
 <div id="controls">
-	<button onclick="window.onresize()">Resize</button>
 	<button onclick="onSwitchBetweenWordAndTranslation(this)"><b>Word</b> <-> translation</button>
 	<button class="off" onclick="onToggleEdit(this)">Edit</button>
 	<button class="off" onclick="onToggleDebug(this)">Debug</button>
 </div>
 
 <div id="edit-gui">
-	<p>
-		Add words and translations on top of the image using the draggable box and attached form.<br>
-		When you're done, click the "Copy" button below and paste that into the card's "Content" field.
-	</p>
-	<input id="html" placeholder="HTML will end up here" type="text"/>
-	<button onclick="onCopyContentHtml()">Copy</button>
-
 	<div id="draggable">
 		<div class="handles">
 			<div class="handle" id="top-left-handle">TL</div>
@@ -44,6 +38,7 @@
 		<button id="button-delete" class="hidden" onclick="onDeleteButton()">Delete</button>
 	</div>
 </div>
+<input id="html-content" placeholder="HTML content will end up here" type="text"/>
 
 <div id="content">
 	{{Image}}
@@ -76,9 +71,11 @@
 	var fields = document.getElementById("fields");
 	var imageScaleRatio = 1;
 	var initializations = 0;
+	var timeoutHandle = null;
 	var editingWord = null;
 	var editingTranslation = null;
 	var editMode = false;
+	var hasUnsavedChanges = false;
 	var viewMode = "word"; // or "translation"
 	var lastRectangleLeft = 0;
 	var lastRectangleTop = 0;
@@ -97,6 +94,25 @@
 	var consoleLog = function(message)
 	{
 		console.innerHTML += message += "<br>";
+	};
+
+	/**
+	 * Display a temporary message.
+	 *
+	 * @param {string} message
+	 *
+	 * @return {void}
+	 */
+	var flashMessage = function(message)
+	{
+		var flash = document.getElementById("flash");
+
+		flash.innerText = message;
+		flash.classList.add("visible");
+
+		flash.addEventListener("animationend", function() {
+			flash.classList.remove("visible");
+		});
 	};
 
 	/**
@@ -261,6 +277,27 @@
 			width: Math.round(rectangle.offsetWidth / imageScaleRatio),
 			height: Math.round(rectangle.offsetHeight / imageScaleRatio)
 		};
+	};
+
+	/**
+	 * Called by clicking on the "Copy" button above the image when the edit
+	 * view is enabled. Build the final HTML and copy it in the clipboard.
+	 *
+	 * @return {void}
+	 */
+	var copyContentHtmlToClipboard = function()
+	{
+		var htmlInput = document.getElementById("html-content");
+
+		htmlInput.value = buildContentHtml();
+
+		htmlInput.select();
+		document.execCommand("copy");
+
+		hasUnsavedChanges = false;
+
+		// Inform the user
+		flashMessage("HTML content copied to clipboard");
 	};
 
 	/**
@@ -443,10 +480,28 @@
 		// Since the edit GUI takes up some space
 		// we need to replace the view elements
 		window.onresize();
+		toggleButtonState(button);
 
 		// Edit GUI is now enabled
-		toggleButtonState(button);
-		editMode = true;
+		if (editgGui.classList.contains("visible")) {
+			editMode = true;
+
+			var message = "Drag and resize the box where you want to add a word or a translation and use the attached form.\n\n";
+			message += "Click on an existing word or translation to update or delete it using the form.\n\n";
+			message += "When you're done, click the \"Copy\" button below and paste the now-in-clipboard HTML into the card\'s \"Content\" field.";
+
+			flashMessage(message);
+
+			return;
+		}
+
+		// Edit GUI is now disabled
+		editMode = false;
+
+		// Copy new HTML content into the clipboard
+		if (hasUnsavedChanges === true) {
+			copyContentHtmlToClipboard();
+		}
 	};
 
 	/**
@@ -714,6 +769,7 @@
 
 		editingWord = null;
 		editingTranslation = null;
+		hasUnsavedChanges = true;
 	};
 
 	/**
@@ -742,22 +798,8 @@
 		readingField.value = "";
 		meaningField.value = "";
 		translationField.value = "";
-	};
 
-	/**
-	 * Called by clicking on the "Copy" button above the image when the edit
-	 * view is enabled. Build the final HTML and copy it in the clipboard.
-	 *
-	 * @return {void}
-	 */
-	var onCopyContentHtml = function()
-	{
-		var htmlInput = document.getElementById("html");
-
-		htmlInput.value = buildContentHtml();
-
-		htmlInput.select();
-		document.execCommand("copy");
+		hasUnsavedChanges = true;
 	};
 
 	/**

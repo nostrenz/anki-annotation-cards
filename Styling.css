@@ -173,6 +173,37 @@ button.off {
 	color: white;
 }
 
+#flash {
+	position: absolute;
+	top: 0.5rem;
+	left: 0.5rem;
+	max-width: 25%;
+	color: white;
+	background-color: rgba(20, 20, 20, 0.6);
+	border: 2px solid rgba(80, 80, 80, 0.5);
+	border-radius: 4px;
+	padding: 0.3rem;
+	box-sizing: border-box;
+	font-size: 1.1rem;
+	z-index: 9;
+	text-align: left;
+	display: none;
+	pointer-events: none;
+}
+
+#flash.visible {
+	display: block;
+	animation: 2s flashMessage;
+	animation-fill-mode: forwards;
+	pointer-events: all;
+}
+
+#flash:hover {
+	animation-play-state: paused;
+	background-color: rgba(20, 20, 20, 0.8);
+	border-color:rgba(80, 80, 80, 0.7);
+}
+
 /*
 Edit GUI
 */
@@ -187,6 +218,22 @@ Edit GUI
 
 #edit-gui > p {
 	font-size: 1rem;
+	margin: 0 0.5rem;
+}
+
+#html-content {
+	width: 1px; /* A width of 0 would prevent the copy to clipboard function to work */
+	height: 0px;
+	opacity: 0.0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 0;
+	pointer-events: none;
+}
+
+#edit-gui > button {
+	margin: 0.3rem 0;
 }
 
 #draggable,
@@ -316,4 +363,14 @@ Debug
 
 #console.visible {
 	display: block;
+}
+
+/*
+Keyframe
+*/
+
+@keyframes flashMessage {
+	0% { opacity: 1; }
+	75% { opacity: 1; }
+	100% { opacity: 0; }
 }
