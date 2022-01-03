@@ -1,7 +1,9 @@
 <div id="flash"></div>
 
 <div id="controls">
-	<button onclick="onSwitchBetweenWordAndTranslation(this)"><b>Word</b> <-> translation</button>
+	<button class="button-switch mode-word" onclick="onSwitchBetweenWordAndTranslation(this)">
+		<span>Word</span> <-> <span>Translation</span>
+	</button>
 	<button class="off" onclick="onToggleEdit(this)">Edit</button>
 	<button class="off" onclick="onToggleDebug(this)">Debug</button>
 	<input type="range" min="0.5" max="2" step="0.2" oninput="onChangeFontSize(this)" onchange="onChangeFontSize(this)">
@@ -393,11 +395,14 @@
 		wordFields.classList.toggle("hidden");
 		translationFields.classList.toggle("hidden");
 
+		button.classList.remove("mode-word");
+		button.classList.remove("mode-translation");
+
 		if (wordFields.className === "hidden") {
-			button.innerHTML = "Word <-> <b>Translation</b>";
+			button.classList.add("mode-translation");
 			viewMode = "translation";
 		} else {
-			button.innerHTML = "<b>Word</b> <-> Translation";
+			button.classList.add("mode-word");
 			viewMode = "word";
 		}
 
