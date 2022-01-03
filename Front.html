@@ -375,10 +375,11 @@
 	 * @param {number} top
 	 * @param {number} width
 	 * @param {number} height
+	 * @param {boolean} relativeToScroll
 	 *
 	 * @return {void}
 	 */
-	var moveDraggable = function(left, top, width, height)
+	var moveDraggable = function(left, top, width, height, relativeToScroll)
 	{
 		lastRectangleLeft = left;
 		lastRectangleTop = top;
@@ -388,8 +389,10 @@
 		top += (content.offsetTop + image.offsetTop);
 
 		// Take scroll amount into account
-		left -= body.scrollLeft;
-		top -= body.scrollTop;
+		if (relativeToScroll !== false) {
+			left -= body.scrollLeft;
+			top -= body.scrollTop;
+		}
 
 		// Place the rectangle to the new position
 		rectangle.style.left = left + "px";
@@ -879,7 +882,7 @@
 				left -= (content.offsetLeft + image.offsetLeft);
 				top -= (content.offsetTop + image.offsetTop);
 
-				moveDraggable(left, top);
+				moveDraggable(left, top, undefined, undefined, false);
 			} if (handleId === "bottom-right-handle") {
 				element.style.top = top + "px";
 				element.style.left = left + "px";
@@ -887,7 +890,7 @@
 				var width = (bottomRightHandle.offsetLeft - topLeftHandle.offsetLeft + bottomRightHandle.offsetWidth);
 				var height = (bottomRightHandle.offsetTop - topLeftHandle.offsetTop + bottomRightHandle.offsetHeight);
 
-				moveDraggable(lastRectangleLeft, lastRectangleTop, width, height);
+				moveDraggable(lastRectangleLeft, lastRectangleTop, width, height, false);
 			}
 
 			var rectangleLeft = rectangle.offsetLeft - content.offsetLeft - image.offsetLeft;
