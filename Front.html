@@ -429,8 +429,16 @@
 		var editgGui = document.getElementById("edit-gui");
 		editgGui.classList.toggle("visible");
 
+		var width = 100;
+		var height = 100;
+
 		// Place the draggable rectangle at the top-left corner of the image
-		moveDraggable(0, 0, 100, 100);
+		moveDraggable(
+			(image.offsetWidth / 2) - ((width + fields.offsetWidth) / 2),
+			(image.offsetHeight / 2) - (height / 2),
+			width,
+			height
+		);
 
 		// Since the edit GUI takes up some space
 		// we need to replace the view elements
