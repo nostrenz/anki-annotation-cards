@@ -155,6 +155,11 @@ img.debug {
 	user-select: none;
 }
 
+#controls > input[type=range] {
+	height: 10px;
+	width: 50px;
+}
+
 button {
 	border: 1px solid lightgrey;
 	border-radius: 2px;
