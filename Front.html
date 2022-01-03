@@ -87,11 +87,23 @@
 	Function
 	*/
 
+	/**
+	 * Append a message to the console.
+	 *
+	 * @param {string} message
+	 *
+	 * @return {void}
+	 */
 	var consoleLog = function(message)
 	{
 		console.innerHTML += message += "<br>";
 	};
 
+	/**
+	 * Calculate the ratio between the orginal image and the resized one as displayed in the window.
+	 *
+	 * @return {void}
+	 */
 	var calculateImageScaleRatio = function()
 	{
 		var imageScaleRatioX = image.width / image.naturalWidth;
@@ -104,6 +116,13 @@
 		}
 	};
 
+	/**
+	 * Place an element with left, top, width and heigh arguments.
+	 *
+	 * @param {HTMLElement} element
+	 *
+	 * @return {void}
+	 */
 	var placeElement = function(element)
 	{
 		var left = element.getAttribute("left");
@@ -135,6 +154,11 @@
 		element.style.maxHeight = height + "px";
 	};
 
+	/**
+	 * Update the position of all the words and translations.
+	 *
+	 * @return {void}
+	 */
 	var updateViewElements = function()
 	{
 		// Place words
@@ -167,68 +191,11 @@
 		}
 	};
 
-	var changeNotesOpacity = function(value)
-	{
-		for (var i = 0; i < translations.children.length; i++) {
-			translations.children[i].style.opacity = value;
-		}
-	};
-
-	var changeNotesBackgroundOpacity = function(value)
-	{
-		for (var i = 0; i < translations.children.length; i++) {
-			translations.children[i].style.background = "rgba(255, 255, 238, " + value + ")";
-		}
-	};
-
-	var displayInnerNoteContentAccordingToSide = function()
-	{
-		// Look at each translations
-		for (var i = 0; i < translations.children.length; i++) {
-			var childNote = translations.children[i];
-
-			if (childNote.children.length < 1) {
-				continue;
-			}
-
-			var front = null;
-			var back = null;
-
-			for (var j = 0; j < childNote.children.length; j++) {
-				if (childNote.children[j].tagName === "FRONT") {
-					front = childNote.children[j];
-				}
-
-				if (childNote.children[j].tagName === "BACK") {
-					back = childNote.children[j];
-				}
-			}
-
-			// Do nothing if we don't have both the front and back side
-			if (!front || !back) {
-				continue;
-			}
-
-			if (front) {
-				front.style.display = (innerNoteSide === "FRONT" ? "block" : "none");
-			}
-
-			if (back) {
-				back.style.display = (innerNoteSide === "BACK" ? "block" : "none");
-			}
-		}
-	};
-
-	var buildWordHtml = function(word, reading, meaning, left, top, width, height)
-	{
-		return '<word reading="'+ reading +'" meaning="' + meaning + '" left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + word + '</word>';
-	};
-
-	var buildTranslationHtml = function(translation, left, top, width, height)
-	{
-		return '<translation left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + translation + '</translation>';
-	};
-
+	/**
+	 * Build the final HTML which should be put in the card's "Content" field.
+	 *
+	 * @return {string}
+	 */
 	var buildContentHtml = function()
 	{
 		var html = '<words>';
@@ -242,7 +209,7 @@
 			var width = words.children[i].getAttribute("width");
 			var height = words.children[i].getAttribute("height");
 
-			html += buildWordHtml(word, reading, meaning, left, top, width, height);
+			html += '<word reading="'+ reading +'" meaning="' + meaning + '" left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + word + '</word>';
 		}
 
 		html += '</words>';
@@ -255,7 +222,7 @@
 			var width = translations.children[i].getAttribute("width");
 			var height = translations.children[i].getAttribute("height");
 
-			html += buildTranslationHtml(translation, left, top, width, height);
+			html += '<translation left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + translation + '</translation>';
 		}
 
 		html += '</translations>';
@@ -263,18 +230,22 @@
 		return html;
 	};
 
-	var setElementPosition = function(element, left, top)
-	{
-		element.style.left = left + "px";
-		element.style.top = top + "px";
-	};
-
+	/**
+	 * Toggle the state of a button between "on" and "off".
+	 *
+	 * @return {void}
+	 */
 	var toggleButtonState = function(button)
 	{
 		button.classList.toggle("off");
 		button.classList.toggle("on");
 	};
 
+	/**
+	 * Get the position and size of the draggable rectangle relative to the image scale ration
+	 *
+	 * @return {void}
+	 */
 	var getScalledRect = function()
 	{
 		var left = rectangle.offsetLeft - content.offsetLeft - image.offsetLeft;
@@ -292,17 +263,29 @@
 		};
 	};
 
-	var switchFromWordsToTransmlations = function()
+	/**
+	 * Hide the words and show the translations.
+	 * Called by the back of the card.
+	 *
+	 * @return {void}
+	 */
+	var switchFromWordsToTranslations = function()
 	{
 		words.classList.add("hidden");
 		translations.classList.add("visible");
 		button.innerHTML = "Word <-> <b>Translation</b>";
 	};
 
-	// On AnkiDroid, it might take a few seconds for the view to be
-	// properly loaded. Until then we will only calculate an image ratio
-	// of 1, which would result in badly placed elements. For this reason
-	// we'll loop a few times until we get a correct scale ratio.
+	/**
+	 * On AnkiDroid, it might take a few seconds for the view to be
+	 * properly loaded. Until then we will only calculate an image ratio
+	 * of 1, which would result in badly placed elements. For this reason
+	 * we'll loop a few times until we get a correct scale ratio.
+	 *
+	 * @param {number} seconds
+	 *
+	 * @return {void}
+	*/
 	var initialize = function(seconds)
 	{
 		setTimeout(function() {
@@ -336,16 +319,16 @@
 				content.appendChild(translations);
 			}
 
-			// Init rectangle size
-			rectangle.style.width = "100px";
-			rectangle.style.height = "100px";
-
 			// Make the handle elements draggable
 			dragElement(topLeftHandle);
 			dragElement(bottomRightHandle);
 
 			updateViewElements();
-			consoleLog("Initialized.");
+
+			setTimeout(function() {
+				window.onresize();
+				consoleLog("Initialized.");
+			}, 0.1);
 
 			return;
 		}, seconds);
@@ -355,6 +338,13 @@
 	Event
 	*/
 
+	/**
+	 * Switch between displaying the words dans displaying the translations.
+	 *
+	 * @param {HTMLElement} button
+	 *
+	 * @return {void}
+	 */
 	var onSwitchBetweenWordAndTranslation = function(button)
 	{
 		words.classList.toggle("hidden");
@@ -377,8 +367,16 @@
 	};
 
 	/**
+	 * Move the draggable rectangle to another position.
 	 * Given values should be relative to the image
 	 * (0,0 being the top-left corner) and not scaled.
+	 *
+	 * @param {number} left
+	 * @param {number} top
+	 * @param {number} width
+	 * @param {number} height
+	 *
+	 * @return {void}
 	 */
 	var moveDraggable = function(left, top, width, height)
 	{
@@ -416,6 +414,13 @@
 		fields.style.top = top + "px";
 	};
 
+	/**
+	 * Toggle the edit view.
+	 *
+	 * @param {HTMLElement} button
+	 *
+	 * @return {void}
+	 */
 	var onToggleEdit = function(button)
 	{
 		var editgGui = document.getElementById("edit-gui");
@@ -433,6 +438,13 @@
 		editMode = true;
 	};
 
+	/**
+	 * Toggle the debug view.
+	 *
+	 * @param {HTMLElement} button
+	 *
+	 * @return {void}
+	 */
 	var onToggleDebug = function(button)
 	{
 		toggleButtonState(button);
@@ -444,6 +456,12 @@
 		draggable.classList.toggle("debug");
 	};
 
+	/**
+	 * Display a popup next to a overed word
+	 * containing its reading and meaning.
+	 *
+	 * @return {void}
+	 */
 	var onWordMouseOver = function(event)
 	{
 		var word = event.target.innerHTML;
@@ -504,11 +522,22 @@
 		popup.style.top = top + "px";
 	};
 
+	/**
+	 * Hide the popup when the mouse cursor leaves a word.
+	 *
+	 * @return {void}
+	 */
 	var onWordMouseLeave = function(event)
 	{
 		popup.style.display = "none";
 	};
 
+	/**
+	 * When the edit view is enabled, move the
+	 * draggable rectangle over a clicked word.
+	 *
+	 * @return {void}
+	 */
 	var onWordMouseClick = function(event)
 	{
 		// Edit GUI not enabled
@@ -546,6 +575,12 @@
 		editingTranslation = null;
 	};
 
+	/**
+	 * When the edit view is enabled, move the
+	 * draggable rectangle over a clicked translation.
+	 *
+	 * @return {void}
+	 */
 	var onTranslationMouseClick = function(event)
 	{
 		// Edit GUI not enabled
@@ -580,6 +615,13 @@
 		editingTranslation = event.target;
 	};
 
+	/**
+	 * Called by clicking on the "Add" or "Update" button in
+	 * the form next to the draggable rectangle. Add a new word
+	 * or translation, or update an existing one.
+	 *
+	 * @return {void}
+	 */
 	var onAddOrUpdateButton = function()
 	{
 		var rect = getScalledRect();
@@ -663,6 +705,12 @@
 		editingTranslation = null;
 	};
 
+	/**
+	 * Called by clicking on the "Add" or "Update" button in the form next
+	 * to the draggable rectangle. Delete an existing word or translation.
+	 *
+	 * @return {void}
+	 */
 	var onDeleteButton = function()
 	{
 		if (editingWord) {
@@ -685,6 +733,12 @@
 		translationField.value = "";
 	};
 
+	/**
+	 * Called by clicking on the "Copy" button above the image when the edit
+	 * view is enabled. Build the final HTML and copy it in the clipboard.
+	 *
+	 * @return {void}
+	 */
 	var onCopyContentHtml = function()
 	{
 		var htmlInput = document.getElementById("html");
@@ -695,8 +749,14 @@
 		document.execCommand("copy");
 	};
 
-	document.onmousemove = function handleMouseMove(event) {
-		var eventDoc, doc, body;
+	/**
+	 * Called when moving the mouse cursor, used to update the debug view.
+	 */
+	document.onmousemove = function handleMouseMove(event)
+	{
+		var eventDoc = null;
+		var doc = null;
+		var body = null;
 
 		event = event || window.event;
 
@@ -743,20 +803,19 @@
 		cursorPosition.innerHTML += "<br>Cursor (scaled) left=" + scaledLeft + ' top=' + scaledTop;
 	};
 
-	// Move the draggable rectangle with the scroll
-	body.addEventListener("scroll", function(e) {
-		//left -= body.scrollLeft;
-		//top -= body.scrollTop;
-
-		moveDraggable(lastRectangleLeft, lastRectangleTop);
-	});
-
-	// Re-place view elements
+	/**
+	 * Re-position the view elements when the page is resized.
+	 */
 	window.onresize = function()
 	{
 		calculateImageScaleRatio();
 		updateViewElements();
 	};
+
+	// Move the draggable rectangle with the scroll
+	body.addEventListener("scroll", function(e) {
+		moveDraggable(lastRectangleLeft, lastRectangleTop);
+	});
 
 	/*
 	Initialization
@@ -768,37 +827,53 @@
 	Draggable
 	*/
 
-	function dragElement(elmnt) {
-		var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+	/**
+	 * Set an element to be draggable.
+	 *
+	 * @param {HTMLElement} element
+	 *
+	 * @return {void}
+	 */
+	var dragElement = function(element)
+	{
+		var posX = 0;
+		var posY = 0;
 
-		elmnt.onmousedown = dragMouseDown;
-
-		function dragMouseDown(e) {
+		/**
+		 * Called when the element starts to be dragged.
+		 */
+		element.onmousedown = function(e)
+		{
 			e = e || window.event;
 			e.preventDefault();
-			// get the mouse cursor position at startup:
-			pos3 = e.clientX;
-			pos4 = e.clientY;
+
+			posX = e.clientX;
+			posY = e.clientY;
 
 			document.onmouseup = closeDragElement;
 			document.onmousemove = elementDrag;
-		}
+		};
 
-		function elementDrag(e) {
+		/**
+		 * Called when the element is being dragged.
+		 */
+		var elementDrag = function(e)
+		{
 			e = e || window.event;
 			e.preventDefault();
 
-			// calculate the new cursor position:
-			pos1 = pos3 - e.clientX;
-			pos2 = pos4 - e.clientY;
-			pos3 = e.clientX;
-			pos4 = e.clientY;
+			// New cursor position
+			var pos1 = posX - e.clientX;
+			var pos2 = posY - e.clientY;
 
-			var top = elmnt.offsetTop - pos2;
-			var left = elmnt.offsetLeft - pos1;
-			var handleId = elmnt.getAttribute("id");
+			posX = e.clientX;
+			posY = e.clientY;
 
-			// Resize rectangle accordingly
+			var top = element.offsetTop - pos2;
+			var left = element.offsetLeft - pos1;
+			var handleId = element.getAttribute("id");
+
+			// Resize the rectangle accordingly
 			if (handleId === "top-left-handle") {
 				// Make positions relative to the image
 				left -= (content.offsetLeft + image.offsetLeft);
@@ -806,9 +881,8 @@
 
 				moveDraggable(left, top);
 			} if (handleId === "bottom-right-handle") {
-				// Set the element's new position:
-				elmnt.style.top = top + "px";
-				elmnt.style.left = left + "px";
+				element.style.top = top + "px";
+				element.style.left = left + "px";
 
 				var width = (bottomRightHandle.offsetLeft - topLeftHandle.offsetLeft + bottomRightHandle.offsetWidth);
 				var height = (bottomRightHandle.offsetTop - topLeftHandle.offsetTop + bottomRightHandle.offsetHeight);
@@ -821,15 +895,19 @@
 			var rectangleWidth = rectangle.offsetWidth;
 			var rectangleHeight = rectangle.offsetHeight;
 
+			// Update the debug view
 			cursorPosition.innerHTML = "";
 			cursorPosition.innerHTML += "<br>Draggable (px) left=" + rectangleLeft + " top=" + rectangleTop + " width=" + rectangleWidth + " height=" + rectangleHeight;
 			cursorPosition.innerHTML += "<br>Draggable (sclaed) left=" + Math.round(rectangleLeft/imageScaleRatio) + " top=" + Math.round(rectangleTop/imageScaleRatio) + " width=" + Math.round(rectangleWidth/imageScaleRatio) + " height=" + Math.round(rectangleHeight/imageScaleRatio);
-		}
+		};
 
-		function closeDragElement() {
-			/* stop moving when mouse button is released:*/
+		/**
+		 * Called when the element ends to be dragged.
+		 */
+		var closeDragElement = function()
+		{
 			document.onmouseup = null;
 			document.onmousemove = null;
-		}
-	}
+		};
+	};
 </script>
