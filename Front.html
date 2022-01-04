@@ -7,7 +7,7 @@
 	</button>
 	<button class="off" onclick="onToggleEdit(this)">Edit</button>
 	<button class="off" onclick="onToggleDebug(this)">Debug</button>
-	<input type="range" min="0.5" max="2" step="0.2" oninput="onChangeFontSize(this)" onchange="onChangeFontSize(this)">
+	<input id="font-size-input" type="range" min="0.5" max="2" step="0.1" oninput="onChangeFontSize(this)" onchange="onChangeFontSize(this)">
 </div>
 
 <div id="edit-gui">
@@ -64,6 +64,7 @@
 	var body = document.getElementsByTagName("body")[0];
 	var content = document.getElementById("content");
 	var image = content.getElementsByTagName("img")[0];
+	var settings = content.getElementsByTagName("settings")[0];
 	var words = content.getElementsByTagName("words")[0];
 	var translations = content.getElementsByTagName("translations")[0];
 	var popup = document.getElementById("popup");
@@ -79,7 +80,6 @@
 	var editingWord = null;
 	var editingTranslation = null;
 	var editMode = false;
-	var hasUnsavedChanges = false;
 	var viewMode = "word"; // or "translation"
 	var lastRectangleLeft = 0;
 	var lastRectangleTop = 0;
@@ -121,6 +121,22 @@
 		flash.addEventListener("animationend", function() {
 			flash.classList.remove("visible");
 		});
+	};
+
+	/**
+	 * Get the .card element.
+	 *
+	 * @return {HTMLElement|null}
+	 */
+	var getCardElement = function()
+	{
+		var card = document.getElementsByClassName("card");
+
+		if (!card || card.length !== 1) {
+			return null;
+		}
+
+		return card[0];
 	};
 
 	/**
@@ -182,6 +198,48 @@
 	};
 
 	/**
+	 * Read and apply settings.
+	 *
+	 * @return {void}
+	 */
+	var updateSettings = function()
+	{
+		var card = getCardElement();
+
+		if (!card) {
+			return;
+		}
+
+		for (var i = 0; i < settings.children.length; i++) {
+			var name = settings.children[i].getAttribute("name");
+			var value = settings.children[i].innerText;
+
+			consoleLog(name + " -> " + value);
+
+			// Set theme
+			if (name === "theme" && value === "dark") {
+				card.classList.add("dark");
+
+				continue;
+			}
+
+			// Set font size
+			if (name === "fontSize") {
+				value = Number(value);
+
+				if (value === NaN) {
+					continue;
+				}
+
+				var fontSizeInput = document.getElementById("font-size-input");
+
+				fontSizeInput.value = value;
+				onChangeFontSize(fontSizeInput);
+			}
+		}
+	};
+
+	/**
 	 * Update the position of all the words and translations.
 	 *
 	 * @return {void}
@@ -225,7 +283,28 @@
 	 */
 	var buildContentHtml = function()
 	{
-		var html = '<words>';
+		var card = getCardElement();
+		var fontSizeInput = document.getElementById("font-size-input");
+
+		var theme = "light";
+		var fontSize = Number(fontSizeInput.value);
+
+		if (card) {
+			theme = card.classList.contains("dark") ? "dark" : "light";
+		}
+
+		var html = '<settings>';
+
+		if (theme) {
+			html += '<setting name="theme">' + theme + '</setting>';
+		}
+
+		if (fontSize !== 1) {
+			html += '<setting name="fontSize">' + fontSize + '</setting>';
+		}
+
+		html += '</settings>';
+		html += '<words>';
 
 		for (var i = 0; i < words.children.length; i++) {
 			var word = words.children[i].innerHTML;
@@ -305,8 +384,6 @@
 		htmlInput.select();
 		document.execCommand("copy");
 
-		hasUnsavedChanges = false;
-
 		// Inform the user
 		flashMessage("HTML content copied to clipboard");
 	};
@@ -355,6 +432,12 @@
 
 			// Now initialized, or we've already tried too many times
 
+			// Create settings element if needed
+			if (!settings) {
+				settings = document.createElement("settings");
+				content.appendChild(settings);
+			}
+
 			// Create words element if needed
 			if (!words) {
 				words = document.createElement("words");
@@ -371,6 +454,7 @@
 			dragElement(topLeftHandle);
 			dragElement(bottomRightHandle);
 
+			updateSettings();
 			updateViewElements();
 
 			setTimeout(function() {
@@ -395,13 +479,13 @@
 	 */
 	var onSwitchTheme = function(button)
 	{
-		var card = document.getElementsByClassName("card");
+		var card = getCardElement();
 
-		if (!card || card.length !== 1) {
+		if (!card) {
 			return;
 		}
 
-		card[0].classList.toggle("dark");
+		card.classList.toggle("dark");
 	};
 
 	/**
@@ -531,9 +615,7 @@
 		editMode = false;
 
 		// Copy new HTML content into the clipboard
-		if (hasUnsavedChanges === true) {
-			copyContentHtmlToClipboard();
-		}
+		copyContentHtmlToClipboard();
 	};
 
 	/**
@@ -829,7 +911,6 @@
 
 		editingWord = null;
 		editingTranslation = null;
-		hasUnsavedChanges = true;
 
 		// Inform the user
 		flashMessage((viewMode.charAt(0).toUpperCase() + viewMode.slice(1)) + ' ' + (isNew ? "added" : "updated"));
@@ -866,7 +947,6 @@
 		meaningField.value = "";
 		translationField.value = "";
 
-		hasUnsavedChanges = true;
 		editingWord = null;
 		editingTranslation = null;
 
