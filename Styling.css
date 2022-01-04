@@ -14,7 +14,26 @@ body, html, .card {
 	font-size: 20px;
 	text-align: center;
 	color: black;
-	background-color: white;
+}
+
+/*
+Dark theme
+*/
+
+.card.dark {
+	background-color: #333333;
+}
+
+.card.dark #controls button:not(.on):not(.off) {
+	color: white;
+	background-color: #505050;
+	border-color: #393939;
+}
+
+.card.dark #controls > .button-switch { color: rgb(119, 119, 119) !important; }
+.card.dark #controls > .button-switch.mode-word > span:nth-child(1),
+.card.dark #controls > .button-switch.mode-translation > span:nth-child(2) {
+	color: white;
 }
 
 /*
@@ -146,8 +165,8 @@ img.debug {
 }
 
 #controls button { font-weight: bold; }
-#controls > .button-switch { color: grey; }
 
+#controls > .button-switch { color: grey; }
 #controls > .button-switch.mode-word > span:nth-child(1),
 #controls > .button-switch.mode-translation > span:nth-child(2) {
 	color: black;

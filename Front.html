@@ -1,6 +1,7 @@
 <div id="flash"></div>
 
 <div id="controls">
+	<button class="button-theme" onclick="onSwitchTheme(this)">☀</button>
 	<button class="button-switch mode-word" onclick="onSwitchBetweenWordAndTranslation(this)">
 		<span>Word</span> <-> <span>Translation</span>
 	</button>
@@ -384,6 +385,24 @@
 	/*
 	Event
 	*/
+
+	/**
+	 * Switch between the light and dark theme.
+	 *
+	 * @param {HTMLElement} button
+	 *
+	 * @return {void}
+	 */
+	var onSwitchTheme = function(button)
+	{
+		var card = document.getElementsByClassName("card");
+
+		if (!card || card.length !== 1) {
+			return;
+		}
+
+		card[0].classList.toggle("dark");
+	};
 
 	/**
 	 * Switch between displaying the words dans displaying the translations.
