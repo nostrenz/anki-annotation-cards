@@ -109,8 +109,12 @@
 	var flashMessage = function(message)
 	{
 		var flash = document.getElementById("flash");
+		var width = (content.offsetLeft + image.offsetLeft) - 20;
+
+		consoleLog(width);
 
 		flash.innerText = message;
+		flash.style.maxWidth = (width >= 150 ? (width + "px") : "calc(100% - 1rem)");
 		flash.classList.add("visible");
 
 		flash.addEventListener("animationend", function() {
@@ -171,6 +175,9 @@
 		element.style.height = height + "px";
 		element.style.maxWidth = width + "px";
 		element.style.maxHeight = height + "px";
+
+		// Unhide the element
+		element.classList.remove("hidden");
 	};
 
 	/**
@@ -713,6 +720,7 @@
 	 */
 	var onAddOrUpdateButton = function()
 	{
+		var isNew = true;
 		var rect = getScalledRect();
 
 		var wordField = document.querySelector("input#word");
@@ -721,12 +729,14 @@
 		var translationField = document.querySelector("textarea#translation");
 
 		if (viewMode === "word") {
+			isNew = (editingWord === null);
+
 			// Empty fields
 			if (!wordField.value && !readingField.value && !meaningField.value) {
+				flashMessage("Fill at least one of the three fields to " + (isNew ? "add a" : "update the") + " word");
+
 				return;
 			}
-
-			var isNew = (editingWord === null);
 
 			// Create new element
 			if (isNew) {
@@ -734,6 +744,9 @@
 
 				editingWord = document.createElement("word");
 				editingWord.appendChild(textNode);
+
+				// Hide the element utile we moveit to its correct location
+				editingWord.classList.add("hidden");
 
 				// Add element
 				words.appendChild(editingWord);
@@ -748,12 +761,14 @@
 			editingWord.setAttribute("width", rect.width);
 			editingWord.setAttribute("height", rect.height);
 		} else if (viewMode === "translation") {
+			isNew = (editingTranslation === null);
+
 			// Empty field
 			if (!translationField.value) {
+				flashMessage("Fill the text field to " + (isNew ? "add a" : "update the") + " translation");
+
 				return;
 			}
-
-			var isNew = (editingTranslation === null);
 
 			// Create new element
 			if (isNew) {
@@ -761,6 +776,9 @@
 
 				editingTranslation = document.createElement("translation");
 				editingTranslation.appendChild(textNode);
+
+				// Hide the element utile we move it to its correct location
+				editingTranslation.classList.add("hidden");
 
 				// Add element
 				translations.appendChild(editingTranslation);
@@ -793,6 +811,9 @@
 		editingWord = null;
 		editingTranslation = null;
 		hasUnsavedChanges = true;
+
+		// Inform the user
+		flashMessage((viewMode.charAt(0).toUpperCase() + viewMode.slice(1)) + ' ' + (isNew ? "added" : "updated"));
 	};
 
 	/**
@@ -810,6 +831,10 @@
 		}
 
 		// Reset
+		var wordField = document.querySelector("input#word");
+		var readingField = document.querySelector("input#reading");
+		var meaningField = document.querySelector("input#meaning");
+		var translationField = document.querySelector("textarea#translation");
 		var buttonSet = document.getElementById("button-set");
 		var buttonDelete = document.getElementById("button-delete");
 
@@ -823,6 +848,11 @@
 		translationField.value = "";
 
 		hasUnsavedChanges = true;
+		editingWord = null;
+		editingTranslation = null;
+
+		// Inform the user
+		flashMessage((viewMode.charAt(0).toUpperCase() + viewMode.slice(1)) + " deleted");
 	};
 
 	/**
