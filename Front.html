@@ -74,6 +74,7 @@
 	var bottomRightHandle = document.getElementById("bottom-right-handle");
 	var rectangle = document.getElementById("rectangle");
 	var fields = document.getElementById("fields");
+	var fontSizeInput = document.getElementById("font-size-input");
 	var imageScaleRatio = 1;
 	var initializations = 0;
 	var timeoutHandle = null;
@@ -111,8 +112,6 @@
 	{
 		var flash = document.getElementById("flash");
 		var width = (content.offsetLeft + image.offsetLeft) - 20;
-
-		consoleLog(width);
 
 		flash.innerText = message;
 		flash.style.maxWidth = (width >= 150 ? (width + "px") : "calc(100% - 1rem)");
@@ -214,8 +213,6 @@
 			var name = settings.children[i].getAttribute("name");
 			var value = settings.children[i].innerText;
 
-			consoleLog(name + " -> " + value);
-
 			// Set theme
 			if (name === "theme" && value === "dark") {
 				card.classList.add("dark");
@@ -231,10 +228,8 @@
 					continue;
 				}
 
-				var fontSizeInput = document.getElementById("font-size-input");
-
 				fontSizeInput.value = value;
-				onChangeFontSize(fontSizeInput);
+				onChangeFontSize();
 			}
 		}
 	};
@@ -284,8 +279,6 @@
 	var buildContentHtml = function()
 	{
 		var card = getCardElement();
-		var fontSizeInput = document.getElementById("font-size-input");
-
 		var theme = "light";
 		var fontSize = Number(fontSizeInput.value);
 
@@ -517,6 +510,9 @@
 		}
 
 		translations.classList.toggle("visible");
+
+		// Update font size
+		onChangeFontSize();
 	};
 
 	/**
@@ -639,17 +635,19 @@
 	/**
 	 * Called when changing the value of the font size slider.
 	 *
-	 * @param {HTMLElement} input
-	 *
 	 * @return {void}
 	 */
-	var onChangeFontSize = function(input)
+	var onChangeFontSize = function()
 	{
-		popup.style.fontSize = (14 * input.value) + "px";
-		popup.style.lineHeight = (15 * input.value) + "px";
+		try {
+			popup.style.fontSize = (14 * fontSizeInput.value) + "px";
+			popup.style.lineHeight = (15 * fontSizeInput.value) + "px";
 
-		for (var i = 0; i < translations.children.length; i++) {
-			translations.children[i].style.fontSize = (14 * input.value) + "px";
+			for (var i = 0; i < translations.children.length; i++) {
+				translations.children[i].style.fontSize = (14 * fontSizeInput.value) + "px";
+			}
+		} catch (e) {
+			flashMessage(e.message);
 		}
 	};
 
