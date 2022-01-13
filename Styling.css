@@ -83,10 +83,10 @@ translations.visible {
 }
 
 translations > translation {
-	/* Display: table will the translation element to grow to fit the text,
+	/* Display: table allows the translation element to grow to fit the text,
 	while display: block will ensure the element is always sized like defined by
 	the Content HTML but the contained text might overflow. */
-	display: table/*block*/;
+	display: flex;
 	position: absolute;
 	font-size: 10%;
 	background: white;
@@ -94,10 +94,14 @@ translations > translation {
 	border-radius: 5px;
 	color: black;
 	padding: 0.5em;
-	word-break: keep-all;
+	word-wrap: break-word;
 	box-sizing: border-box;
 	text-align: center;
-	/*font-family: "CC Wild Words";*/
+	font-family: "CC Wild Words";
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-shadow: 2px 0 0 white, -2px 0 0 white, 0 2px 0 white, 0 -2px 0 white, 1px 1px white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
 }
 
 words > word.hidden,
