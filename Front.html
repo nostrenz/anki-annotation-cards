@@ -34,7 +34,17 @@
 		</div>
 		<div id="translation-fields" class="hidden">
 			<div>
-				<textarea id="translation" placeholder="translation" cols="20" rows="4"></textarea>
+				<textarea id="translation" placeholder="translation" cols="21" rows="4"></textarea>
+			</div>
+			<div>
+				<span>Background:</span>
+				<input type="radio" name="translation-background" value="white" id="tsl-bg-white" checked="checked">
+				<input type="radio" name="translation-background" value="black" id="tsl-bg-black">
+				<input type="radio" name="translation-background" value="none" id="tsl-bg-none">
+			</div>
+			<div class="vertically-centered">
+				<label for="tsl-border">Border:</label>
+				<input type="checkbox" name="translation-border" value="true" id="tsl-border">
 			</div>
 		</div>
 
@@ -320,8 +330,18 @@
 			var top = translations.children[i].getAttribute("top");
 			var width = translations.children[i].getAttribute("width");
 			var height = translations.children[i].getAttribute("height");
+			var background = translations.children[i].getAttribute("background");
+			var border = translations.children[i].getAttribute("border");
 
-			html += '<translation left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '">' + translation + '</translation>';
+			if (!background) {
+				background = "white";
+			}
+
+			if (border !== "false") {
+				border = "true";
+			}
+
+			html += '<translation left="' + left + '" top="' + top + '" width="' + width + '" height="' + height + '" background="' + background + '" border="' + border + '">' + translation + '</translation>';
 		}
 
 		html += '</translations>';
@@ -640,7 +660,7 @@
 	var onChangeFontSize = function()
 	{
 		var fontSize = (14 * fontSizeInput.value);
-		var lineHeight = (15 * fontSizeInput.value);
+		var lineHeight = (16 * fontSizeInput.value);
 
 		// Scale font size according to the window's dimensions
 		fontSize *= (imageScaleRatio * 1.2);
@@ -770,12 +790,22 @@
 		var top = Number(event.target.getAttribute("top"));
 		var width = Number(event.target.getAttribute("width"));
 		var height = Number(event.target.getAttribute("height"));
+		var background = event.target.getAttribute("background");
+		var border = event.target.getAttribute("border");
 
 		var translationField = document.querySelector("textarea#translation");
+		var whiteBackgroundInput = document.getElementById("tsl-bg-white");
+		var blackBackgroundInput = document.getElementById("tsl-bg-black");
+		var noneBackgroundInput = document.getElementById("tsl-bg-none");
+		var borderInput = document.getElementById("tsl-border");
 		var buttonSet = document.getElementById("button-set");
 		var buttonDelete = document.getElementById("button-delete");
 
 		translationField.value = text;
+		whiteBackgroundInput.checked = (background !== "black" && background !== "none");
+		blackBackgroundInput.checked = (background === "black");
+		noneBackgroundInput.checked = (background === "none");
+		borderInput.checked = (border !== "false");
 		buttonSet.innerText = "Update";
 		buttonDelete.classList.remove("hidden");
 
@@ -836,6 +866,9 @@
 		var readingField = document.querySelector("input#reading");
 		var meaningField = document.querySelector("input#meaning");
 		var translationField = document.querySelector("textarea#translation");
+		var blackBackgroundInput = document.getElementById("tsl-bg-black");
+		var noneBackgroundInput = document.getElementById("tsl-bg-none");
+		var borderInput = document.getElementById("tsl-border");
 
 		if (viewMode === "word") {
 			isNew = (editingWord === null);
@@ -895,10 +928,20 @@
 				editingTranslation.innerHTML = translationField.value.trim();
 			}
 
+			var background = "white";
+
+			if (blackBackgroundInput.checked) {
+				background = "black";
+			} else if (noneBackgroundInput.checked) {
+				background = "none";
+			}
+
 			editingTranslation.setAttribute("left", rect.left);
 			editingTranslation.setAttribute("top", rect.top);
 			editingTranslation.setAttribute("width", rect.width);
 			editingTranslation.setAttribute("height", rect.height);
+			editingTranslation.setAttribute("background", background);
+			editingTranslation.setAttribute("border", borderInput.checked ? "true" : "false");
 		}
 
 		// Place element
