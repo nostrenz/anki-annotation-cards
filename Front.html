@@ -666,6 +666,10 @@
 		fontSize *= (imageScaleRatio * 1.2);
 		lineHeight *= (imageScaleRatio * 1.2);
 
+		if (lineHeight < 9) {
+			lineHeight = 9;
+		}
+
 		popup.style.fontSize = fontSize + "px";
 		popup.style.lineHeight = lineHeight + "px";
 
