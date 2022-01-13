@@ -665,16 +665,6 @@
 		var reading = event.target.getAttribute("reading");
 		var meaning = event.target.getAttribute("meaning");
 
-		var left = content.offsetLeft + 10;
-		var top = content.offsetTop;
-
-		var parent = event.target;
-		var translation = event.target.parentNode.parentNode;
-
-		// Position relative to the parent
-		left += parent.offsetLeft + parent.offsetWidth;
-		top += parent.offsetTop;
-
 		var writingElement = popup.getElementsByClassName("writing")[0];
 		var readingElement = popup.getElementsByClassName("reading")[0];
 		var meaningElement = popup.getElementsByClassName("meaning")[0];
@@ -703,20 +693,7 @@
 			meaningElement.classList.add("hidden");
 		}
 
-		popup.style.display = "block";
-		popup.style.maxWidth = (image.offsetWidth / 2) + "px";
-
-		// Parent position relative to the image
-		var parentLeft = (parent.offsetLeft - content.offsetLeft - image.offsetLeft);
-
-		// Palce the popup to the lest of the parent instead of to the right of
-		// it if the parent is located in the second horizontal half of the image.
-		if (parentLeft > image.offsetWidth / 2) {
-			left -= (10 + parent.offsetWidth + popup.offsetWidth + 10);
-		}
-
-		popup.style.left = left + "px";
-		popup.style.top = top + "px";
+		placePopupNextToElement(event.target);
 	};
 
 	/**
@@ -810,6 +787,36 @@
 
 		editingWord = null;
 		editingTranslation = event.target;
+	};
+
+	/**
+	 * Place the popup to the left or right of an element.
+	 *
+	 * @param {HTMLElement} element
+	 */
+	var placePopupNextToElement = function(element)
+	{
+		var left = content.offsetLeft + 10;
+		var top = content.offsetTop;
+
+		// Position relative to the parent
+		left += element.offsetLeft + element.offsetWidth;
+		top += element.offsetTop;
+
+		popup.style.display = "block";
+		popup.style.maxWidth = (image.offsetWidth / 2) + "px";
+
+		// Parent position relative to the image
+		var parentLeft = (element.offsetLeft - content.offsetLeft - image.offsetLeft);
+
+		// Place the popup to the lest of the element instead of to the right of
+		// it if the element is located in the second horizontal half of the image.
+		if (parentLeft > image.offsetWidth / 2) {
+			left -= (10 + element.offsetWidth + popup.offsetWidth + 10);
+		}
+
+		popup.style.left = left + "px";
+		popup.style.top = top + "px";
 	};
 
 	/**
