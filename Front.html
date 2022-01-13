@@ -7,7 +7,7 @@
 	</button>
 	<button class="off" onclick="onToggleEdit(this)">Edit</button>
 	<button class="off" onclick="onToggleDebug(this)">Debug</button>
-	<input id="font-size-input" type="range" min="0.5" max="2" step="0.1" oninput="onChangeFontSize(this)" onchange="onChangeFontSize(this)">
+	<input id="font-size-input" type="range" min="0.5" max="2.5" step="0.1" oninput="onChangeFontSize(this)" onchange="onChangeFontSize(this)">
 </div>
 
 <div id="edit-gui">
@@ -260,15 +260,15 @@
 		for (var i = 0; i < translations.children.length; i++) {
 			placeElement(translations.children[i]);
 
-			// Resize font
-			translations.children[i].style.fontSize = (imageScaleRatio * 1.2) + "rem";
-
 			// Unbind previous events
 			translations.children[i].removeEventListener("click", onTranslationMouseClick);
 
 			// Register events
 			translations.children[i].addEventListener("click", onTranslationMouseClick);
 		}
+
+		// Update font size
+		onChangeFontSize();
 	};
 
 	/**
@@ -639,15 +639,18 @@
 	 */
 	var onChangeFontSize = function()
 	{
-		try {
-			popup.style.fontSize = (14 * fontSizeInput.value) + "px";
-			popup.style.lineHeight = (15 * fontSizeInput.value) + "px";
+		var fontSize = (14 * fontSizeInput.value);
+		var lineHeight = (15 * fontSizeInput.value);
 
-			for (var i = 0; i < translations.children.length; i++) {
-				translations.children[i].style.fontSize = (14 * fontSizeInput.value) + "px";
-			}
-		} catch (e) {
-			flashMessage(e.message);
+		// Scale font size according to the window's dimensions
+		fontSize *= (imageScaleRatio * 1.2);
+		lineHeight *= (imageScaleRatio * 1.2);
+
+		popup.style.fontSize = fontSize + "px";
+		popup.style.lineHeight = lineHeight + "px";
+
+		for (var i = 0; i < translations.children.length; i++) {
+			translations.children[i].style.fontSize = fontSize + "px";
 		}
 	};
 
@@ -978,9 +981,8 @@
 			event.pageY = event.clientY + (doc && doc.scrollTop || body && body.scrollTop || 0) - (doc && doc.clientTop || body && body.clientTop || 0 );
 		}
 
-		// We now have the cursor's position relative to the page with
-		// event.pageX and event.pageY, but we want the position according
-		// to the image instead.
+		// We now have the cursor's position relative to the page with event.pageX
+		// and event.pageY, but we want the position according to the image instead.
 		var left = event.pageX;
 		var top = event.pageY;
 
