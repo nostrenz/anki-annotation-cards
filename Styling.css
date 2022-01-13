@@ -410,6 +410,7 @@ Edit GUI
 	font-size: 1.0rem;
 	font-weight: bold;
 	user-select: none;
+	text-shadow: 2px 0 0 #d3d3d380, -2px 0 0 #d3d3d380, 0 2px 0 #d3d3d380, 0 -2px 0 #d3d3d380, 1px 1px #d3d3d380, -1px -1px 0 #d3d3d380, 1px -1px 0 #d3d3d380, -1px 1px 0 #d3d3d380;
 }
 
 #translation-fields input[type='radio']:after,
