@@ -20,7 +20,7 @@ Works in the Anki desktop application as well as in AnkiDroid.
 
 And that's it. From there you can start creating cards.
 For each new card, you'll have to drag & drop an image into the "Image" field (which will simply fill it with an image tag like `<img src="image.jpg">`).
-The content field will contain the HTML for words and translations added on top of the image, fortunalty you don't have to write that yourself as the card can produce it for you.
+The content field will contain the HTML for words and translations added on top of the image, fortunalty you don't have to write that yourself as the card can [produce it for you](#Edition).
 
 Optionnally, you can also install the font "_CC Wild Words_" on your system.
 If not installed, a default font will be used instead.
@@ -46,7 +46,7 @@ The bubble can contain whatever text you want.
 ### Edit
 
 Toggles the edit mode.
-Refer to the [Edition](#Edition) section below to lear how it works.
+Refer to the [Edition](#Edition) section below to learn how it works.
 
 ### Debug
 
