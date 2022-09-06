@@ -1,0 +1,331 @@
+<div id="flash"></div>
+
+<!-- Content -->
+<div id="sentence">
+	{{Sentence}}
+</div>
+
+<table id="dictionary">
+	<tr>
+		<th>Word</th>
+		<th>Reading</th>
+		<th>Meaning</th>
+	</tr>
+</table>
+
+<!-- The popup appearing when clicking a <word> -->
+<div id="popup">
+	<reading></reading>
+	<word></word>
+	<meaning></meaning>
+</div>
+
+<!-- The form appearing when selecting some text in the <sentence> -->
+<div id="form">
+	<div class="selection"></div>
+	<input type="text" name="reading" placeholder="Reading">
+	<input type="text" name="meaning" placeholder="Meaning">
+	<div class="buttons">
+		<button>Close</button>
+		<button>OK</button>
+	</div>
+</div>
+<input id="html-content" placeholder="HTML content will end up here" type="text"/>
+
+<!-- Script -->
+<script>
+	const sentenceElement = document.getElementById("sentence");
+	const popupElement = document.getElementById("popup");
+	const formElement = document.getElementById("form");
+	const wordElements = sentenceElement.getElementsByTagName("word");
+	const formCloseButtonElement = formElement.getElementsByTagName("button")[0];
+	const formOkButtonElement = formElement.getElementsByTagName("button")[1];
+	const dictionaryElement = document.getElementById("dictionary");
+
+	var currentSelectionData = null;
+
+	/*
+	Class
+	*/
+
+	class SelectionData
+	{
+		constructor()
+		{
+			this.selection = window.getSelection();
+			this.selectedText = this.selection.toString();
+			this.range = this.selection.getRangeAt(0);
+			this.posX = 0;
+			this.posY = 0;
+			this.width = 0;
+			this.height = 0;
+
+			const rects = this.range.getClientRects();
+
+			if (rects.length < 1) {
+				return;
+			}
+
+			this.posX = rects[0].left;
+			this.posY = rects[0].top;
+			this.height = rects[0].height;
+
+			for (const rect of rects) {
+				this.width += rect.width;
+			}
+		};
+
+		/**
+		* @return {boolean}
+		*/
+		isValid()
+		{
+			return this.selection && this.selectedText && this.range && this.selection.rangeCount;
+		};
+	};
+
+	/*
+	Function
+	*/
+
+	/**
+	* @param {HTMLElement} wordElement
+	*
+	* @return {void}
+	*/
+	const showPopup = function(wordElement)
+	{
+		const rect = wordElement.getBoundingClientRect();
+
+		// Edit popup content
+		popupElement.getElementsByTagName("word")[0].innerHTML = wordElement.innerHTML;
+		popupElement.getElementsByTagName("reading")[0].innerHTML = wordElement.getAttribute("reading");
+		popupElement.getElementsByTagName("meaning")[0].innerHTML = wordElement.getAttribute("meaning");
+
+		popupElement.classList.add("visible");
+
+		// Place the popup
+		popupElement.style.top = (rect.top + (rect.bottom - rect.top) + 10) + "px";
+		popupElement.style.left = (rect.left - (popupElement.offsetWidth / 2) + ((rect.right - rect.left) / 2)) + "px";
+
+		if (popupElement.style.left < 0) {
+			popupElement.style.left = 0;
+		}
+	};
+
+	/**
+	* @return {void}
+	*/
+	const closePopup = function()
+	{
+		popupElement.classList.remove("visible");
+	};
+
+	/**
+	* @param {HTMLElement} wordElement
+	*
+	* @return {void}
+	*/
+	const focusWord = function(wordElement)
+	{
+		wordElement.classList.add("focused");
+
+		showPopup(wordElement);
+	};
+
+	/**
+	* @param {HTMLElement} wordElement
+	*
+	* @return {void}
+	*/
+	const unfocusWord = function(wordElement)
+	{
+		wordElement.classList.remove("focused");
+
+		closePopup();
+	};
+
+	/**
+	* @param {HTMLElement} wordElement
+	*
+	* @return {void}
+	*/
+	const bindWordElementEvents = function(wordElement)
+	{
+		wordElement.addEventListener("mouseover", function(e) { focusWord(e.target); });
+		wordElement.addEventListener("mouseout", function(e) { unfocusWord(e.target); });
+	};
+
+	/**
+	* @param {string} reading
+	* @param {string} meaning
+	*
+	* @return {HTMLElement} The created <word> element.
+	*/
+	const replaceSelectedTextWithWord = function(reading, meaning)
+	{
+		// Selection not valid
+		if (!currentSelectionData.isValid()) {
+			currentSelectionData = null;
+
+			return;
+		}
+
+		currentSelectionData.range.deleteContents();
+
+		const newWordElement = document.createElement("word");
+		newWordElement.innerHTML = currentSelectionData.selectedText;
+		newWordElement.setAttribute("reading", reading);
+		newWordElement.setAttribute("meaning", meaning);
+		bindWordElementEvents(newWordElement);
+
+		currentSelectionData.range.insertNode(newWordElement);
+		currentSelectionData = null;
+
+		return newWordElement;
+	};
+
+	/**
+	* Called by clicking on the "Copy" button above the image when the edit
+	* view is enabled. Build the final HTML and copy it in the clipboard.
+	*
+	* @return {void}
+	*/
+	const copyContentHtmlToClipboard = function()
+	{
+		const htmlInput = document.getElementById("html-content");
+		htmlInput.value = sentenceElement.innerHTML.trim();
+		htmlInput.select();
+
+		document.execCommand("copy");
+
+		// Inform the user
+		flashMessage("HTML content copied to clipboard");
+	};
+
+	/**
+	* Display a temporary message.
+	*
+	* @param {string} message
+	*
+	* @return {void}
+	*/
+	const flashMessage = function(message)
+	{
+		var flash = document.getElementById("flash");
+		var width = 300; //(content.offsetLeft + image.offsetLeft) - 20;
+
+		flash.innerText = message;
+		flash.style.maxWidth = (width >= 150 ? (width + "px") : "calc(100% - 1rem)");
+		flash.classList.add("visible");
+
+		flash.addEventListener("animationend", function() {
+			flash.classList.remove("visible");
+		});
+	};
+
+	/**
+	* Add a new row in the dictionary table for a word element.
+	*
+	* @param {HTMLElement} wordElement
+	*
+	* @return {void}
+	*/
+	const appendWordToDictionary = function(wordElement)
+	{
+		const wordTdElement = document.createElement("td");
+		wordTdElement.innerText = wordElement.innerText;
+
+		const meaningTdElement = document.createElement("td");
+		meaningTdElement.innerText = wordElement.getAttribute("reading");
+
+		const readingTdElement = document.createElement("td");
+		readingTdElement.innerText = wordElement.getAttribute("meaning");
+
+		const rowElement = document.createElement("tr");
+		rowElement.appendChild(wordTdElement);
+		rowElement.appendChild(meaningTdElement);
+		rowElement.appendChild(readingTdElement);
+
+		dictionaryElement.appendChild(rowElement);
+	};
+
+	/**
+	* Appends each words to the dictionary then makes it visible.
+	*/
+	const buildAndShowDictionary = function()
+	{
+		for (const wordElement of wordElements) {
+			appendWordToDictionary(wordElement);
+		}
+
+		dictionaryElement.classList.add("visible");
+	};
+
+	/*
+	Event
+	*/
+
+	// Text selected event
+	sentenceElement.addEventListener("mouseup", function(e) {
+		if (e.target.tagName === "WORD") {
+			return;
+		}
+
+		currentSelectionData = new SelectionData();
+
+		// Nothing was selected
+		if (!currentSelectionData.isValid()) {
+			return;
+		}
+
+		// Show the form under the selected text
+		formElement.classList.add("visible");
+		formElement.getElementsByTagName("div")[0].innerText = currentSelectionData.selectedText;
+		formElement.style.width = (currentSelectionData.width > formElement.offsetWidth ? currentSelectionData.width : 200) + "px";
+		formElement.style.top = (currentSelectionData.posY + currentSelectionData.height + 10) + "px";
+		formElement.style.left = (currentSelectionData.posX - (formElement.offsetWidth / 2) + (currentSelectionData.width / 2)) + "px";
+
+		if (formElement.style.left < 0) {
+			formElement.style.left = 0;
+		}
+	});
+
+	// Form "Close" button click event
+	formCloseButtonElement.addEventListener("click", function() {
+		formElement.classList.remove("visible");
+	});
+
+	// Form "OK" button click event
+	formOkButtonElement.addEventListener("click", function() {
+		const readingInputElement = formElement.querySelector("input[name=reading]");
+		const meaningInputElement = formElement.querySelector("input[name=meaning]");
+
+		if (!readingInputElement.value || !meaningInputElement.value) {
+			flashMessage("Fill both fields to add a word");
+
+			return;
+		}
+
+		// Replace the selected text with a <word> element
+		replaceSelectedTextWithWord(readingInputElement.value, meaningInputElement.value);
+
+		// Empty form fields
+		readingInputElement.value = "";
+		meaningInputElement.value = "";
+
+		formElement.classList.remove("visible");
+
+		// Copy new HTML content into the clipboard
+		copyContentHtmlToClipboard();
+	});
+
+	/*
+	Logic
+	*/
+
+	// Bind click event on words
+	for (const wordElement of wordElements) {
+		bindWordElementEvents(wordElement);
+	}
+</script>

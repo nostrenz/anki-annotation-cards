@@ -1,0 +1,233 @@
+:root {
+	--color-primary: blueviolet;
+	--color-secondary: #d3d3d3;
+	--box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.2);
+}
+
+#meaning {
+	text-align: center;
+}
+
+/*
+Common
+*/
+
+#popup, #form, #dictionary {
+	box-shadow: var(--box-shadow);
+	border: 1px solid white;
+}
+
+/*
+Sentence
+*/
+
+#sentence {
+	font-size: 1.3rem;
+	text-align: center;
+}
+
+#sentence > word {
+	border-bottom: 1px dotted var(--color-primary);
+}
+
+#sentence > word.focused {
+	color: var(--color-primary);
+	border-bottom: 2px solid var(--color-primary);
+}
+
+/*
+Popup
+*/
+
+#popup, #form {
+	display: none;
+	box-sizing: border-box;
+	background-color: var(--color-secondary);
+}
+
+#popup {
+	border-bottom-left-radius: 7px;
+	border-bottom-right-radius: 7px;
+	font-size: 12px;
+}
+
+#popup.visible {
+	display: block;
+	position: absolute;
+}
+
+#popup > * {
+	display: block;
+}
+
+#popup > reading,
+#popup > word {
+	background-color: var(--color-primary);
+	color: white;
+}
+
+#popup > reading {
+	padding: 0.5rem 0.5rem 0 0.5rem;
+	font-size: 0.9em;
+}
+
+#popup > word {
+	border-bottom: 1px solid white;
+	padding: 0 0.5rem 0.5rem 0.5rem;
+	font-size: 1.2em;
+}
+
+#popup > meaning {
+	padding: 0.5rem;
+	border-bottom-left-radius: 7px;
+	border-bottom-right-radius: 7px;
+	font-size: 1.1em;
+	color: black;
+}
+
+/*
+Form
+*/
+
+#form {
+	width: 200px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+#form.visible {
+	display: block;
+	position: absolute;
+}
+
+#form > * {
+	width: 100%;
+}
+
+#form > .selection {
+	border-bottom: 1px solid black;
+	padding-bottom: 0.1rem;
+	margin-bottom: 0.2rem;
+	padding: 0.2rem;
+	box-sizing: border-box;
+	color: black;
+}
+
+#form input {
+	padding: 0.3rem;
+	border-radius: 3px;
+	border: 1px solid lightgrey;
+	box-sizing: border-box;
+}
+
+#form > .buttons {
+	display: flex;
+	margin-top: 3px;
+}
+
+#form button {
+	width: 100%;
+}
+
+#form button:nth-child(1) { color: #C42C2C; }
+#form button:nth-child(2) { color: #25B925; }
+
+#html-content {
+	width: 1px; /* A width of 0 would prevent the copy to clipboard function to work */
+	height: 0px;
+	opacity: 0.0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 0;
+	pointer-events: none;
+}
+
+/*
+Flash
+*/
+
+#flash {
+	position: absolute;
+	top: 0.5rem;
+	left: 0.5rem;
+	color: rgb(223, 223, 223);
+	background-color: rgba(20, 20, 20, 0.6);
+	border: 2px solid rgba(80, 80, 80, 0.5);
+	box-shadow: var(--box-shadow);
+	border-radius: 4px;
+	padding: 0.3rem;
+	box-sizing: border-box;
+	font-size: 1rem;
+	z-index: 9;
+	text-align: left;
+	display: none;
+	pointer-events: none;
+}
+
+#flash.visible {
+	display: block;
+	animation: 2s flashMessage;
+	animation-fill-mode: forwards;
+	pointer-events: all;
+}
+
+#flash:hover {
+	animation-play-state: paused;
+	background-color: rgba(20, 20, 20, 0.8);
+	border-color:rgba(80, 80, 80, 0.7);
+}
+
+/*
+Dictionary
+*/
+
+#dictionary {
+	display: none;
+	margin: 0 auto;
+	border-spacing: 0;
+	width: 100%;
+	margin-top: 1rem;
+	border: 1px solid white;
+}
+
+#dictionary.visible {
+	display: table;
+}
+
+#dictionary th,
+#dictionary td {
+	border-left: 1px solid white;
+	padding: 0.3rem;
+	box-sizing: border-box;
+}
+
+#dictionary th {
+	border-bottom: 1px solid white;
+}
+
+#dictionary th:first-child, #dictionary td:first-child { border-left: none; }
+#dictionary th:last-child, #dictionary td:last-child { border-right: none; }
+
+#dictionary th {
+	font-weight: bold;
+	background-color: var(--color-primary);
+	color: white;
+}
+
+#dictionary td {
+	border-top: none;
+	border-bottom: none;
+	background-color: var(--color-secondary);
+	color: black;
+}
+
+/*
+Keyframe
+*/
+
+@keyframes flashMessage {
+	0% { opacity: 1; }
+	75% { opacity: 1; }
+	100% { opacity: 0; }
+}
